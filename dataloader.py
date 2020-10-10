@@ -11,11 +11,11 @@ from torch.utils.data import Dataset
 
 
 class DataLoader(Dataset):
-    def __init__(self, list_path, img_size=416):
-        with open(list_path, "r") as file:
+    def __init__(self, train_path, img_size=416):
+        with open(train_path, "r") as file:
             self.img_files = file.readlines()
 
-        self.label_files = [path.replace("images", "labels").replace(".png", ".txt").replace(".jpg", ".txt")
+        self.label_files = [path.replace("images", "labels").replace(".jpg", ".txt").replace(".jpg", ".txt")
                             for path in self.img_files]
 
         self.img_size = img_size
@@ -39,9 +39,9 @@ class DataLoader(Dataset):
 
         targets = None
         if os.path.exists(label_path):
-
-            # boxes得初始维度为(1, 5)，分别为类别class和bbox坐标
             boxes = torch.from_numpy(np.loadtxt(label_path).reshape(-1, 5))
+            targets = torch.zeros((len(boxes), 6))
+            targets[:, 1:] = boxes
 
         return img_path, img, targets
 
