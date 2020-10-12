@@ -35,17 +35,21 @@ def xml2txt(xml_path, txt_path):
     """
     Converting xml files to txt files. Num in line means [label, cen_x, cen_y, w, h]
     """
-    def getElement(ele, str_list):
-        element_list = []
+    def getBbox(bndbox, str_list):
+        bbox = []
         for text in str_list:
-            element = ele.find(text)
-            element_list.append(float(element.text))
+            element = bndbox.find(text)
+            bbox.append(int(element.text))
         
-        return element_list
+        return bbox
     
     xml_file = os.listdir(xml_path)
     for xml in xml_file:
+        # find the xml path and locate the txt save path
         xml_ = os.path.join(xml_path, xml)
+        save_path = os.path.join(txt_path, xml.split('.')[0]+'.txt')
+        # os.make(save_path, exist_ok=True)
+
         tree = ET.parse(xml_)
         root = tree.getroot()
 
@@ -54,18 +58,35 @@ def xml2txt(xml_path, txt_path):
         height = float(size.find("height").text)
         width = float(size.find("width").text)
 
-        # obtain the bbox info
-        for object in tree.iter(tag="object"):
-            info = []
-            name = object.find("name").text
-            print(class_names.index(name))
+        with open(save_path, mode='a+') as fp:
 
-            for bbox in object.iter(tag="bndbox"):
-                element_list = getElement(bbox, ["xmin", "xmax", "ymin", "ymax"])
-                print(element_list)
-            
+            # obtain the bbox info
+            for object in tree.iter(tag="object"):
 
+                # an object occupy a line, first locate the category info
+                line = ""
+                name = object.find("name").text
+                line += str(class_names.index(name))
 
+                # Then locate the bbox info and changes them to [x, y, w, h]
+                bndbox = object.find("bndbox")
+                bbox = [float(0) for _ in range(4)]
+                xmin, ymin, xmax, ymax = getBbox(bndbox, ["xmin", "ymin", "xmax", "ymax"])
+
+                w = xmax - xmin
+                h = ymax - ymin
+                center_x = xmin + w // 2
+                center_y = ymin + h // 2
+
+                bbox[0] = round(center_x / width, 6)
+                bbox[1] = round(center_y / height, 6)
+                bbox[2] = round(center_x / width, 6)
+                bbox[3] = round(center_y / height, 6)
+
+                for box in bbox:
+                    line += ' ' + str(box)
+                line += '\n'
+                fp.writelines(line)
 
 def parse_data_config(path):
     options = dict()
@@ -87,7 +108,6 @@ def parse_data_config(path):
     return options
 
 
-# data_config = parse_data_config("config/ships/702.data")
-# class_names = load_classes(data_config["name"])
-# print(class_names)
-# xml2txt("data/ships/xmls", "")
+data_config = parse_data_config("config/ships/702.data")
+class_names = load_classes(data_config["name"])
+xml2txt("data/ships/xmls", "data/ships/labels")
