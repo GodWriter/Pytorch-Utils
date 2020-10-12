@@ -30,5 +30,7 @@ if __name__ == "__main__":
     
     for batch_i, (img_path, images, labels) in enumerate(dataloader):
         print("batch_i: ", batch_i)
-        print("images: ", images.shape)
-        print("labels: ", labels.shape)
+        print("images: ", images)
+        print("labels: ", labels)
+
+        print("=" * 50)
