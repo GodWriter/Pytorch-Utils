@@ -1,5 +1,6 @@
 import os
 import cv2
+import tqdm
 import numpy as np
 import xml.etree.ElementTree as ET
 
@@ -8,13 +9,25 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def create_dataset_txt(file_path, txt_path):
+    """
+    Create the txt files for datasets.
+    """
+    names = os.listdir(file_path)
+
+    with open(txt_path, mode='a+') as fp:
+        for name in names:
+            line = file_path + '/' + name + '\n'
+            fp.writelines(line)
+
+
 def load_classes(path):
     fp = open(path, 'r')
     names = fp.read().split('\n')[:-1]
     return names
 
 
-def convert_txt_format(txt_path, isLF):
+def convert_txt_format(txt_path, isLF=True):
     """
     :param isLF: True means converting to Unix(LF), False means converting to Windows(CRLF)
     """
@@ -48,11 +61,10 @@ def xml2txt(xml_path, txt_path):
         return bbox
     
     xml_file = os.listdir(xml_path)
-    for xml in xml_file:
+    for xml in tqdm.tqdm(xml_file):
         # find the xml path and locate the txt save path
         xml_ = os.path.join(xml_path, xml)
         save_path = os.path.join(txt_path, xml.split('.')[0]+'.txt')
-        # os.make(save_path, exist_ok=True)
 
         tree = ET.parse(xml_)
         root = tree.getroot()
@@ -132,8 +144,11 @@ def parse_data_config(path):
     return options
 
 
-# data_config = parse_data_config("config/ships/702.data")
-# class_names = load_classes(data_config["name"])
-# xml2txt("data/ships/xmls", "data/ships/labels")
+data_config = parse_data_config("config/ships/702.data")
+class_names = load_classes(data_config["name"])
+xml2txt("data/ships/xmls", "data/ships/labels")
 
 # pltBbox("data/ships/images/1.jpg", "data/ships/labels/1.txt")
+
+# create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
+# convert_txt_format("config/ships/1", isLF=True)
