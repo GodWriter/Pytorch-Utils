@@ -9,9 +9,10 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
-def create_dataset_txt(file_path, txt_path):
+def create_dataset_txt(xml_path, txt_path):
     """
-    Create the txt files for datasets.
+    Create the txt files for datasets. 
+    We use the xml files rather than images for some images haven't objects.
     """
     names = os.listdir(file_path)
 
