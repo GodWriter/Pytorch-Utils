@@ -9,6 +9,31 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def create_category_txt(category, file_path, save_path):
+    """
+    Create txt files that contains image names of the same category.
+    :param category -> list 
+    """
+    name_list = os.listdir(file_path)
+
+    # create a dict to save the images files of same category
+    cat_dict = {}
+    for cat in category:
+        cat_dict[cat] = []
+
+    for name in name_list:
+        for cat in category:
+            if cat in name:
+                cat_dict[cat].append(name)
+    
+    for cat, names in cat_dict.items():
+        with open(os.path.join(save_path, cat + '.txt'), 'a+') as fp:
+            lines = ""
+            for name in names:
+                lines += name + '\n'
+            fp.writelines(lines)
+
+
 def create_dataset_txt(xml_path, txt_path):
     """
     Create the txt files for datasets. 
@@ -18,7 +43,7 @@ def create_dataset_txt(xml_path, txt_path):
 
     with open(txt_path, mode='a+') as fp:
         for name in names:
-            line = file_path + '/' + name + '\n'
+            line = file_path + '/' + name[:-4] + '.jpg' + '\n'
             fp.writelines(line)
 
 
@@ -145,11 +170,15 @@ def parse_data_config(path):
     return options
 
 
-data_config = parse_data_config("config/ships/702.data")
-class_names = load_classes(data_config["name"])
-xml2txt("data/ships/xmls", "data/ships/labels")
+# data_config = parse_data_config("config/ships/702.data")
+# class_names = load_classes(data_config["name"])
+# xml2txt("data/ships/xmls", "data/ships/labels")
 
 # pltBbox("data/ships/images/1.jpg", "data/ships/labels/1.txt")
 
 # create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
 # convert_txt_format("config/ships/1", isLF=True)
+
+# create_category_txt(['cargoship', 'fishboat'], 
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/JPEGImages", 
+#                      "./")
