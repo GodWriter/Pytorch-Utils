@@ -1,12 +1,47 @@
 import os
 import cv2
 import tqdm
+import random
 import numpy as np
 import xml.etree.ElementTree as ET
 
 from PIL import Image
 from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
+
+
+def get_percent_txt(percent, file_path, save_path):
+    """
+    Get a special percent data.
+    """
+
+    def get_percent(txt_path):
+        with open(txt_path, 'r') as fp:
+            lines = fp.readlines()
+
+        # Select random images from the total images.
+        nums = len(lines)
+        rand_idx = [random.randint(0, nums-1) for _ in range(int(nums * percent))]
+
+        # Get the new lines that should be written to the txt file.
+        new_lines = ""
+        for idx in rand_idx:
+            new_lines += lines[idx]
+        
+        return new_lines
+
+    name_list = os.listdir(file_path)
+    for name in tqdm.tqdm(name_list):
+        name_, type_ = name.split('.')
+
+        # txt_path is the original txt, save_txt is the saved percent txt.
+        txt_path = os.path.join(file_path, name)
+        save_txt = os.path.join(save_path, name_ + '_' + str(int(percent*10)) + '%.' + type_)
+
+        with open(save_txt, 'a+') as fp:
+            lines = get_percent(txt_path)
+            print(lines)
+            fp.writelines(lines)
 
 
 def create_category_txt(category, file_path, save_path):
@@ -21,7 +56,7 @@ def create_category_txt(category, file_path, save_path):
     for cat in category:
         cat_dict[cat] = []
 
-    for name in name_list:
+    for name in tqdm.tqdm(name_list):
         for cat in category:
             if cat in name:
                 cat_dict[cat].append(name)
@@ -179,6 +214,9 @@ def parse_data_config(path):
 # create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
 # convert_txt_format("config/ships/1", isLF=True)
 
-# create_category_txt(['cargoship', 'fishboat'], 
+# create_category_txt(['cargoship', 'fishboat', 'daodanhuwei', 'daodanquzhu', 'DSC', 'kechuan', 'passengership', 'qingxinghuwei', 'warship', 'xunyang'], 
 #                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/JPEGImages", 
-#                      "./")
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category")
+
+
+get_percent_txt(0.3, "config/ships", "config/test")
