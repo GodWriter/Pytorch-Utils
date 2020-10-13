@@ -2,12 +2,44 @@ import os
 import cv2
 import tqdm
 import random
+import shutil
+
 import numpy as np
 import xml.etree.ElementTree as ET
 
 from PIL import Image
 from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
+
+
+def get_file_from_txt(txt_path, file_path, save_path, file_type='img'):
+    """
+    Get img/label from the txt.
+
+    :param txt_path: path of all the txt files.
+    :param file_path: path of all the files that need to be copied.
+    :param save_path: path to save the copied files.
+    :param file_type: img means copy images, others means copy others, etc. txt mean xxx.txt.
+    """
+
+    def get_file(path):
+        name = line.split('\n')[0]
+        if file_type != 'img':
+            name = name.split('.')[0] + '.' + file_type
+
+        old_dir = os.path.join(file_path, name)
+        new_dir = os.path.join(save_path, name)
+
+        shutil.copyfile(old_dir, new_dir)
+        # os.remove(old_dir)
+
+    txt_list = os.listdir(txt_path)
+
+    for txt in tqdm.tqdm(txt_list):
+        with open(os.path.join(txt_path, txt), 'r') as fp:
+            lines = fp.readlines()
+        for line in lines:
+            get_file(line)
 
 
 def get_percent_txt(percent, file_path, save_path):
@@ -36,11 +68,10 @@ def get_percent_txt(percent, file_path, save_path):
 
         # txt_path is the original txt, save_txt is the saved percent txt.
         txt_path = os.path.join(file_path, name)
-        save_txt = os.path.join(save_path, name_ + '_' + str(int(percent*10)) + '%.' + type_)
+        save_txt = os.path.join(save_path, name_ + '_' + str(int(percent*100)) + '%.' + type_)
 
         with open(save_txt, 'a+') as fp:
             lines = get_percent(txt_path)
-            print(lines)
             fp.writelines(lines)
 
 
@@ -219,4 +250,11 @@ def parse_data_config(path):
 #                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category")
 
 
-get_percent_txt(0.3, "config/ships", "config/test")
+# get_percent_txt(0.1, 
+#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category", 
+#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category-10%")
+
+# get_file_from_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category-10%",
+#                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four",
+#                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four-10%",
+#                   'txt')
