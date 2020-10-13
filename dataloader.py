@@ -15,7 +15,7 @@ class DataLoader(Dataset):
         with open(train_path, "r") as file:
             self.img_files = file.readlines()
 
-        self.label_files = [path.replace("images", "labels").replace(".jpg", ".txt").replace(".jpg", ".txt")
+        self.label_files = [path.replace("images", "labels").replace(".png", ".txt").replace(".jpg", ".txt")
                             for path in self.img_files]
 
         self.img_size = img_size
