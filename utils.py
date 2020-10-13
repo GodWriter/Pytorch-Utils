@@ -12,6 +12,22 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def merge_txt(txt_path, save_path):
+    """
+    Merge all the txt files to only one txt file.
+    """
+    txt_list = os.listdir(txt_path)
+    total_lines = []
+
+    for txt in tqdm.tqdm(txt_list):
+        with open(os.path.join(txt_path, txt), 'r') as fp:
+            lines = fp.readlines()
+        total_lines.extend(lines)
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(total_lines)
+
+
 def get_file_from_txt(txt_path, file_path, save_path, file_type='img'):
     """
     Get img/label from the txt.
@@ -258,3 +274,6 @@ def parse_data_config(path):
 #                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four",
 #                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four-10%",
 #                   'txt')
+
+# merge_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/labels-four-10%",
+#           "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/1.txt")
