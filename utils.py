@@ -12,6 +12,27 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def modify_img_label_size(txt_path, file_path, label_path, shape=(416, 416)):
+    """
+    Resize the image and modify its label at the same time.
+    """
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
+    cnt = 0
+    for line in tqdm.tqdm(lines):
+        name = line.split('\n')[0]
+        img_path = os.path.join(file_path, name)
+
+        # read img and get its shape
+        img = Image.open(img_path)
+        W, H = img.size
+
+        if W > 800 or H > 800:
+            print(cnt)
+            cnt += 1
+
+
 def merge_txt(txt_path, save_path):
     """
     Merge all the txt files to only one txt file.
@@ -275,5 +296,10 @@ def parse_data_config(path):
 #                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four-10%",
 #                   'txt')
 
-# merge_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/labels-four-10%",
-#           "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/1.txt")
+# merge_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/label-category-10%",
+#           "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt")
+
+
+# modify_img_label_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
+#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/JPEGImages-10%",
+#                       "")
