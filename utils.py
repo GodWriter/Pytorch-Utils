@@ -12,12 +12,79 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def check(xml_path, img_path):
+    """
+    Check whether img and label is paired.
+    """
+    img_list = os.listdir(img_path)
+
+    for img_name in tqdm.tqdm(img_list):
+        name, format = img_name.split('.')
+
+        img_dir = os.path.join(img_path, img_name)
+        xml_dir = os.path.join(xml_path, name + '.xml')
+
+        if os.path.exists(img_dir) and os.path.exists(xml_dir):
+            continue
+        else:
+            print(img_dir)
+            break
+
 
 def process_data_size(xml_path, img_path):
     """
     To resize the image and resize the xml.
     """
-    pass
+    def get_element(ele, str_list):
+        element_list = []
+        for text in str_list:
+            element = ele.find(text)
+            element_list.append(element)
+        
+        return element_list
+
+    def do_operation(element_list, ratio):
+        for element in element_list:
+            value = int(element.text) // ratio
+            element.text = str(value)
+
+    img_list = os.listdir(img_path)
+    for img_name in tqdm.tqdm(img_list):
+        name, format = img_name.split('.')
+
+        img_dir = os.path.join(img_path, img_name)
+        xml_dir = os.path.join(xml_path, name + '.xml')
+        
+        img = Image.open(img_dir)
+        W, H = img.size
+
+        if W > 800 or H > 800:
+            ratio = max(W // 800, 1) # avoiding the case of 0
+            shape = (W // ratio, H // ratio)
+
+            # resize the image
+            img = img.resize(shape)
+            img.save(img_dir)
+
+            # modify the xml
+            tree = ET.parse(xml_dir)
+            root = tree.getroot()
+
+            # modify the width and height
+            for elem in tree.iter(tag='height'):
+                value = int(elem.text) // ratio
+                elem.text = str(value)
+
+            for elem in tree.iter(tag='width'):
+                value = int(elem.text) // ratio
+                elem.text = str(value)
+
+            # modify the bbox
+            for elem in tree.iter(tag='bndbox'):
+                element_list = get_element(elem, ["xmin", "xmax", "ymin", "ymax"])
+                do_operation(element_list, ratio)
+            
+            tree.write(xml_dir)
 
 
 def process_data_name(xml_path, img_path):
@@ -57,7 +124,7 @@ def process_data_name(xml_path, img_path):
 
 def remove_label_invalid(xml_path, img_path, invalid_label_path):
     """
-    According to total xml files, removing images unlabelled.
+    According to total img files, removing invalid labels.
     """
     xml_list = os.listdir(xml_path)
     img_list = os.listdir(img_path)
@@ -439,9 +506,9 @@ def parse_data_config(path):
 #                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/train4Class.txt",
 #                 prefix='data/custom/images/')
 
-# remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
-#                         "C:/Users/18917/Desktop/元宝数据标注/image",
-#                         "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
+remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
+                        "C:/Users/18917/Desktop/元宝数据标注/image",
+                        "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
 
 # remove_label_invalid("C:/Users/18917/Desktop/元宝数据标注/label",
 #                      "C:/Users/18917/Desktop/元宝数据标注/image",
@@ -449,3 +516,9 @@ def parse_data_config(path):
 
 # process_data_name("C:/Users/18917/Desktop/元宝数据标注/label", 
 #                   "C:/Users/18917/Desktop/元宝数据标注/image")
+
+process_data_size("C:/Users/18917/Desktop/元宝数据标注/label", 
+                  "C:/Users/18917/Desktop/元宝数据标注/image")
+
+# check("C:/Users/18917/Desktop/元宝数据标注/label", 
+#       "C:/Users/18917/Desktop/元宝数据标注/image")
