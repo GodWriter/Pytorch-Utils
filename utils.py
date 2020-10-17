@@ -12,6 +12,49 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+
+def process_data_size(xml_path, img_path):
+    """
+    To resize the image and resize the xml.
+    """
+    pass
+
+
+def process_data_name(xml_path, img_path):
+    """
+    To get the cleanest images and labels.
+    """
+    img_list = os.listdir(img_path)
+
+    for img_name in tqdm.tqdm(img_list):
+        name, format = img_name.split('.')
+
+        if format != 'jpg':
+            new_name = name + '.jpg'
+
+            # Rename the image file.
+            old_dir = os.path.join(img_path, img_name)
+            new_dir = os.path.join(img_path, new_name)
+
+            img = Image.open(old_dir)
+            img = img.convert('RGB')
+            img.save(old_dir)
+
+            # It's a surprising thing in windows that .JPG is the .jpg
+            os.rename(old_dir, new_dir)
+
+            # Rename the xml file.
+            xml_dir = os.path.join(xml_path, name + '.xml')
+
+            tree = ET.parse(xml_dir)
+            root = tree.getroot()
+            
+            element_filename = root.find("filename")
+            element_filename.text = new_name
+
+            tree.write(xml_dir)
+
+
 def remove_label_invalid(xml_path, img_path, invalid_label_path):
     """
     According to total xml files, removing images unlabelled.
@@ -403,3 +446,6 @@ def parse_data_config(path):
 # remove_label_invalid("C:/Users/18917/Desktop/元宝数据标注/label",
 #                      "C:/Users/18917/Desktop/元宝数据标注/image",
 #                      "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
+
+# process_data_name("C:/Users/18917/Desktop/元宝数据标注/label", 
+#                   "C:/Users/18917/Desktop/元宝数据标注/image")
