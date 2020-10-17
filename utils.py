@@ -12,6 +12,44 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def remove_label_invalid(xml_path, img_path, invalid_label_path):
+    """
+    According to total xml files, removing images unlabelled.
+    """
+    xml_list = os.listdir(xml_path)
+    img_list = os.listdir(img_path)
+
+    xml_name = [xml.split('.')[0] for xml in xml_list]
+    img_name = [img.split('.')[0] for img in img_list]
+
+    for idx in tqdm.tqdm(range(len(xml_name))):
+        if xml_name[idx] not in img_name:
+            old_dir = os.path.join(xml_path, xml_list[idx])
+            new_dir = os.path.join(invalid_label_path, xml_list[idx])
+
+            shutil.copy(old_dir, new_dir)
+            os.remove(old_dir)
+
+
+def remove_image_unlabelled(xml_path, img_path, unlabelled_img_path):
+    """
+    According to total xml files, removing images unlabelled.
+    """
+    xml_list = os.listdir(xml_path)
+    img_list = os.listdir(img_path)
+
+    xml_name = [xml.split('.')[0] for xml in xml_list]
+    img_name = [img.split('.')[0] for img in img_list]
+
+    for idx in tqdm.tqdm(range(len(img_name))):
+        if img_name[idx] not in xml_name:
+            old_dir = os.path.join(img_path, img_list[idx])
+            new_dir = os.path.join(unlabelled_img_path, img_list[idx])
+
+            shutil.copy(old_dir, new_dir)
+            os.remove(old_dir)
+
+
 def modify_txt_file(txt_path, save_path, prefix):
     """
     Method to modify the txt lines. etc. prefix + name
@@ -358,3 +396,10 @@ def parse_data_config(path):
 #                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/train4Class.txt",
 #                 prefix='data/custom/images/')
 
+# remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
+#                         "C:/Users/18917/Desktop/元宝数据标注/image",
+#                         "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
+
+# remove_label_invalid("C:/Users/18917/Desktop/元宝数据标注/label",
+#                      "C:/Users/18917/Desktop/元宝数据标注/image",
+#                      "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
