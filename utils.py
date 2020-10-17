@@ -556,4 +556,4 @@ def parse_data_config(path):
 # rename_xml("C:/Users/18917/Desktop/元宝数据标注/fog/label", 'fog-')
 # rename_xml("C:/Users/18917/Desktop/元宝数据标注/dusk/label", 'dusk-')
 
-rename_file("C:/Users/18917/Desktop/元宝数据标注/fog/image", 'fog-')
+# rename_file("C:/Users/18917/Desktop/元宝数据标注/dusk/image", 'dusk-')
