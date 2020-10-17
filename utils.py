@@ -12,6 +12,36 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def rename_xml(xml_path, prefix):
+    """
+    Rename the xml and filename in it.
+    """
+
+    # First rename the xml.
+    xml_names = os.listdir(xml_path)
+
+    for name in tqdm.tqdm(xml_names):
+        old_name = os.path.join(xml_path, name)
+        new_name = os.path.join(xml_path, prefix + name)
+
+        os.rename(old_name, new_name)
+    
+    # Then rename the filename
+    xml_names = os.listdir(xml_path)
+
+    for name in tqdm.tqdm(xml_names):
+        # Rename the xml file.
+        xml_dir = os.path.join(xml_path, name)
+
+        tree = ET.parse(xml_dir)
+        root = tree.getroot()
+        
+        element_filename = root.find("filename")
+        element_filename.text = prefix + element_filename.text
+
+        tree.write(xml_dir)
+    
+
 def check(xml_path, img_path):
     """
     Check whether img and label is paired.
@@ -180,7 +210,7 @@ def rename_file(file_path, prefix):
     """
     file_names = os.listdir(file_path)
 
-    for name in file_names:
+    for name in tqdm.tqdm(file_names):
         old_name = os.path.join(file_path, name)
         new_name = os.path.join(file_path, prefix + name)
 
@@ -506,9 +536,9 @@ def parse_data_config(path):
 #                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/train4Class.txt",
 #                 prefix='data/custom/images/')
 
-remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
-                        "C:/Users/18917/Desktop/元宝数据标注/image",
-                        "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
+# remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
+#                         "C:/Users/18917/Desktop/元宝数据标注/image",
+#                         "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
 
 # remove_label_invalid("C:/Users/18917/Desktop/元宝数据标注/label",
 #                      "C:/Users/18917/Desktop/元宝数据标注/image",
@@ -517,8 +547,13 @@ remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
 # process_data_name("C:/Users/18917/Desktop/元宝数据标注/label", 
 #                   "C:/Users/18917/Desktop/元宝数据标注/image")
 
-process_data_size("C:/Users/18917/Desktop/元宝数据标注/label", 
-                  "C:/Users/18917/Desktop/元宝数据标注/image")
+# process_data_size("C:/Users/18917/Desktop/元宝数据标注/label", 
+#                   "C:/Users/18917/Desktop/元宝数据标注/image")
 
 # check("C:/Users/18917/Desktop/元宝数据标注/label", 
 #       "C:/Users/18917/Desktop/元宝数据标注/image")
+
+# rename_xml("C:/Users/18917/Desktop/元宝数据标注/fog/label", 'fog-')
+# rename_xml("C:/Users/18917/Desktop/元宝数据标注/dusk/label", 'dusk-')
+
+rename_file("C:/Users/18917/Desktop/元宝数据标注/fog/image", 'fog-')
