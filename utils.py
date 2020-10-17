@@ -12,14 +12,41 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
-def modify_img_label_size(txt_path, file_path, label_path, shape=(416, 416)):
+def modify_txt_file(txt_path, save_path, prefix):
     """
-    Resize the image and modify its label at the same time.
+    Method to modify the txt lines. etc. prefix + name
     """
     with open(txt_path, 'r') as fp:
         lines = fp.readlines()
     
-    cnt = 0
+    for idx in range(len(lines)):
+        lines[idx] = prefix + lines[idx]
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(lines)
+
+
+def rename_file(file_path, prefix):
+    """
+    Method to rename the file. etc. prefix + name
+    """
+    file_names = os.listdir(file_path)
+
+    for name in file_names:
+        old_name = os.path.join(file_path, name)
+        new_name = os.path.join(file_path, prefix + name)
+
+        os.rename(old_name, new_name)
+
+
+def modify_img_size(txt_path, file_path, shape=(416, 416)):
+    """
+    Resize the image and modify its label at the same time.
+    """
+
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
     for line in tqdm.tqdm(lines):
         name = line.split('\n')[0]
         img_path = os.path.join(file_path, name)
@@ -29,8 +56,9 @@ def modify_img_label_size(txt_path, file_path, label_path, shape=(416, 416)):
         W, H = img.size
 
         if W > 800 or H > 800:
-            print(cnt)
-            cnt += 1
+            # resize the image
+            img = img.resize(shape)
+            img.save(img_path)
 
 
 def merge_txt(txt_path, save_path):
@@ -235,6 +263,7 @@ def xml2txt(xml_path, txt_path):
 
 
 def pltBbox(img_path, label_path):
+    print(img_path)
     img = cv2.imread(img_path)
     boxes = np.loadtxt(label_path, dtype=np.float).reshape(-1, 5)
     boxesXXYY = boxes.copy()
@@ -277,7 +306,7 @@ def parse_data_config(path):
 # class_names = load_classes(data_config["name"])
 # xml2txt("data/ships/xmls", "data/ships/labels")
 
-# pltBbox("data/ships/images/1.jpg", "data/ships/labels/1.txt")
+# pltBbox("data/ships/images/IMG_20200531_104442.jpg", "data/ships/labels/IMG_20200531_104442.txt")
 
 # create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
 # convert_txt_format("config/ships/1", isLF=True)
@@ -303,3 +332,29 @@ def parse_data_config(path):
 # modify_img_label_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
 #                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/JPEGImages-10%",
 #                       "")
+
+# modify_img_label_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test.txt",
+#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-image",
+#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-label")
+
+# pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-image/cargoship3.jpg", 
+#         "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-label/cargoship3.txt")
+
+# modify_img_label_size("config/ships/702-valid.txt", "data/ships/images", "data/ships/labels")
+
+# pltBbox("data/ships/images/IMG_20200531_104510.jpg", "data/ships/labels/IMG_20200531_104510.txt")
+
+# modify_img_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
+#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/JPEGImages-10%")
+
+# modify_txt_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
+#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented-dusk.txt",
+#                 prefix='dusk-')
+
+# rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/labels-four-10%-fog",
+#             "fog-")
+
+# modify_txt_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmentedName.txt",
+#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/train4Class.txt",
+#                 prefix='data/custom/images/')
+
