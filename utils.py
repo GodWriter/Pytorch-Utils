@@ -343,17 +343,21 @@ def create_category_txt(category, file_path, save_path):
             fp.writelines(lines)
 
 
-def create_dataset_txt(xml_path, txt_path):
+def create_dataset_txt(file_path, txt_path):
     """
     Create the txt files for datasets. 
     We use the xml files rather than images for some images haven't objects.
     """
     names = os.listdir(file_path)
+    prefix = file_path.replace('\\', '/')
+
+    lines = []
+    for name in tqdm.tqdm(names):
+        line = prefix + '/' + name + '\n'
+        lines.append(line)
 
     with open(txt_path, mode='a+') as fp:
-        for name in names:
-            line = file_path + '/' + name[:-4] + '.jpg' + '\n'
-            fp.writelines(line)
+        fp.writelines(lines)
 
 
 def load_classes(path):
@@ -490,7 +494,9 @@ def parse_data_config(path):
 # pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images/IMG_20200528_110426.jpg", 
 #         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels/IMG_20200528_110426.txt")
 
-# create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
+create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images", 
+                   "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/trains.txt")
+
 # convert_txt_format("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels", 
 #                    isLF=True)
 
