@@ -375,15 +375,15 @@ def convert_txt_format(txt_path, isLF=True):
             str_ = infile.readlines()
             with open(path, 'w', newline=newline, encoding=encoding) as outfile:
                 outfile.writelines(str_)
-                print("file converting success, format: {0}; encoding: {1}; path: {2}".format(tp, encoding, path))
+                # print("file converting success, format: {0}; encoding: {1}; path: {2}".format(tp, encoding, path))
     
     path_list = os.listdir(txt_path)
-    for filename in path_list:
+    for filename in tqdm.tqdm(path_list):
         path = os.path.join(txt_path, filename)
         to_lf(path, isLF)
 
 
-def xml2txt(xml_path, txt_path):
+def xml2txt(class_names, xml_path, txt_path):
     """
     Converting xml files to txt files. Num in line means [label, cen_x, cen_y, w, h]
     """
@@ -480,14 +480,19 @@ def parse_data_config(path):
     return options
 
 
-# data_config = parse_data_config("config/ships/702.data")
-# class_names = load_classes(data_config["name"])
-# xml2txt("data/ships/xmls", "data/ships/labels")
+# data_config = parse_data_config("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
+# class_names = load_classes("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
+# print(class_names)
+# xml2txt(class_names, 
+#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/xmls", 
+#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels")
 
-# pltBbox("data/ships/images/IMG_20200531_104442.jpg", "data/ships/labels/IMG_20200531_104442.txt")
+# pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images/IMG_20200528_110426.jpg", 
+#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels/IMG_20200528_110426.txt")
 
 # create_dataset_txt("data/ships/images", "config/ships/702-valid.txt")
-# convert_txt_format("config/ships/1", isLF=True)
+# convert_txt_format("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels", 
+#                    isLF=True)
 
 # create_category_txt(['cargoship', 'fishboat', 'daodanhuwei', 'daodanquzhu', 'DSC', 'kechuan', 'passengership', 'qingxinghuwei', 'warship', 'xunyang'], 
 #                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/JPEGImages", 
