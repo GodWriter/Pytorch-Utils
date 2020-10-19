@@ -12,6 +12,23 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def delete_null_files(txt_path, img_path):
+    """
+    Check whether the txt file is null, and delete the corresponsding images and txts.
+    """
+    names = os.listdir(txt_path)
+
+    for name in tqdm.tqdm(names):
+        file_path = os.path.join(txt_path, name)
+
+        if not os.path.getsize(file_path):
+            # delete the txt
+            os.remove(file_path)
+
+            # delete the image
+            os.remove(os.path.join(img_path, name.split('.')[0] + '.jpg'))
+
+
 def rename_xml(xml_path, prefix):
     """
     Rename the xml and filename in it.
@@ -494,8 +511,8 @@ def parse_data_config(path):
 # pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images/IMG_20200528_110426.jpg", 
 #         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels/IMG_20200528_110426.txt")
 
-create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images", 
-                   "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/trains.txt")
+# create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images", 
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/trains.txt")
 
 # convert_txt_format("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels", 
 #                    isLF=True)
@@ -568,3 +585,6 @@ create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-
 # rename_xml("C:/Users/18917/Desktop/元宝数据标注/dusk/label", 'dusk-')
 
 # rename_file("C:/Users/18917/Desktop/元宝数据标注/dusk/image", 'dusk-')
+
+# delete_null_files("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels",
+#                   "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images")
