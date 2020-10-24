@@ -12,6 +12,80 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def get_random_dataset(img_path, save_path):
+    """
+    Making training set and testing set.
+    """
+    img_list = os.listdir(img_path)
+    img_len = len(img_list)
+
+    train_set = []
+    test_set = []
+
+    for i in tqdm.tqdm(range(img_len)):
+        img_dir = img_path + '/' + img_list[i] + '\n'
+
+        if i % 6 == 0:
+            test_set.append(img_dir)
+        else:
+            train_set.append(img_dir)
+    
+    with open(os.path.join(save_path, "train.txt"), 'a+') as fp:
+        fp.writelines(train_set)
+    
+    with open(os.path.join(save_path, "test.txt"), 'a+') as fp:
+        fp.writelines(test_set)
+
+
+# def get_random_dataset(img_path, save_path, ratio):
+#     """
+#     Making training set and testing set.
+#     @param ratio: precent of the training set.
+#     """
+#     img_list = os.listdir(img_path)
+#     img_len = len(img_list)
+
+#     train_size = int(img_len * ratio) # size of the training set.
+#     random_list = [i for i in range(img_len)] # which is used to choose random images.
+#     record_list = [0 for _ in range(img_len)] # which is used to record whether the image is used for training or testing. 0 means test
+
+#     while train_size:
+#         idx = random.randint(0, img_len-1)
+#         record_list[idx] = 1
+
+#         # replace [idx] with [img_len - 1]
+#         tmp = random_list[idx]
+#         random_list[idx] = random_list[img_len-1]
+#         random_list[img_len-1] = tmp 
+
+#         train_size -= 1
+#         img_len -= 1
+    
+#     print("record_list: ", record_list)
+
+
+def rezie_images(img_path, save_path):
+    """
+    Resize images and save to the new path.
+    """
+    img_list = os.listdir(img_path)
+
+    for img_name in tqdm.tqdm(img_list):
+        old_dir = os.path.join(img_path, img_name)
+        new_dir = os.path.join(save_path, img_name)
+
+        img = Image.open(old_dir)
+        W, H = img.size
+
+        if W > 800 or H > 800:
+            ratio = max(W // 800, 1) # avoiding the case of 0
+            shape = (W // ratio, H // ratio)
+
+            # resize the image
+            img = img.resize(shape)
+            img.save(new_dir)
+
+
 def delete_null_files(txt_path, img_path):
     """
     Check whether the txt file is null, and delete the corresponsding images and txts.
@@ -69,7 +143,7 @@ def check(xml_path, img_path):
         name, format = img_name.split('.')
 
         img_dir = os.path.join(img_path, img_name)
-        xml_dir = os.path.join(xml_path, name + '.xml')
+        xml_dir = os.path.join(xml_path, name + '.txt')
 
         if os.path.exists(img_dir) and os.path.exists(xml_dir):
             continue
@@ -505,8 +579,8 @@ def parse_data_config(path):
 # class_names = load_classes("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
 # print(class_names)
 # xml2txt(class_names, 
-#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/xmls", 
-#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels")
+#         "data/custom/augmented/dusk/xml",
+#         "data/custom/augmented/dusk/labels")
 
 # pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images/IMG_20200528_110426.jpg", 
 #         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels/IMG_20200528_110426.txt")
@@ -516,53 +590,6 @@ def parse_data_config(path):
 
 # convert_txt_format("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels", 
 #                    isLF=True)
-
-# create_category_txt(['cargoship', 'fishboat', 'daodanhuwei', 'daodanquzhu', 'DSC', 'kechuan', 'passengership', 'qingxinghuwei', 'warship', 'xunyang'], 
-#                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/JPEGImages", 
-#                      "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category")
-
-
-# get_percent_txt(0.1, 
-#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category", 
-#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category-10%")
-
-# get_file_from_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/label-category-10%",
-#                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four",
-#                   "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/labels-four-10%",
-#                   'txt')
-
-# merge_txt("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/label-category-10%",
-#           "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt")
-
-
-# modify_img_label_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
-#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/JPEGImages-10%",
-#                       "")
-
-# modify_img_label_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test.txt",
-#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-image",
-#                       "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-label")
-
-# pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-image/cargoship3.jpg", 
-#         "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/test-label/cargoship3.txt")
-
-# modify_img_label_size("config/ships/702-valid.txt", "data/ships/images", "data/ships/labels")
-
-# pltBbox("data/ships/images/IMG_20200531_104510.jpg", "data/ships/labels/IMG_20200531_104510.txt")
-
-# modify_img_size("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
-#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/JPEGImages-10%")
-
-# modify_txt_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented.txt",
-#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmented-dusk.txt",
-#                 prefix='dusk-')
-
-# rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/labels-four-10%-fog",
-#             "fog-")
-
-# modify_txt_file("C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/augmentedName.txt",
-#                 "C:/Users/18917/Documents/Python Scripts/pytorch/PyTorch-YOLOv3-master/data/ship/全部船舶数据集/标注版/带增广的四类船舶数据/VOCdevkit/VOC2007/augmentedData/train4Class.txt",
-#                 prefix='data/custom/images/')
 
 # remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
 #                         "C:/Users/18917/Desktop/元宝数据标注/image",
@@ -588,3 +615,26 @@ def parse_data_config(path):
 
 # delete_null_files("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels",
 #                   "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images")
+
+# remove_image_unlabelled("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
+#                         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images",
+#                         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/unlabelled")
+
+# remove_label_invalid("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images",
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/unlabelled")
+
+# check("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
+#       "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images")
+
+# delete_null_files("data/custom/augmented/fog/labels",
+#                   "data/custom/augmented/fog/images")
+
+# create_dataset_txt("data/custom/augmented/dusk/images", 
+#                    "data/custom/augmented/dusk/name.txt")
+
+# rezie_images("data/custom/test/images", 
+#              "data/custom/shuffled/images")
+
+# get_random_dataset("data/custom/shuffled/images", 
+#                    "data/custom/shuffled")
