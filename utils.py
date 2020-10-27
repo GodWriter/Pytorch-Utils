@@ -12,7 +12,69 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
-def get_random_dataset(img_path, save_path):
+def txt2xml(class_names, img_path, txt_path, xml_path):
+    """
+    Converting txt files to xml files.
+    """
+    def createNode(name, value):
+        node = doc.createElement(name)
+        if value is not None:
+            node_text = doc.createTextNode(value)
+            node.appendChild(node_text)
+        return node
+
+    img_list = os.listdir(img_path)
+    for img_name in tqdm.tqdm(img_list):
+        img = cv2.imread(os.path.join(img_path, img_name))
+        H, W, _ = img.shape
+
+        boxes = np.loadtxt(os.path.join(txt_path, img_name.split('.')[0] + '.txt'), dtype=np.float).reshape(-1, 5)
+        boxesXXYY = boxes.copy()
+
+        boxesXXYY[:, 1] = (boxes[:, 1] - boxes[:, 3] / 2) * W
+        boxesXXYY[:, 2] = (boxes[:, 2] - boxes[:, 4] / 2) * H
+        boxesXXYY[:, 3] = (boxes[:, 1] + boxes[:, 3] / 2) * W
+        boxesXXYY[:, 4] = (boxes[:, 2] + boxes[:, 4] / 2) * H
+
+        # create xmls
+        doc = Document()
+        annotation = doc.createElement("annotation")
+
+        annotation.appendChild(createNode("folder", "702data"))
+        annotation.appendChild(createNode("filename", img_name))
+        annotation.appendChild(createNode("source", "None"))
+
+        # create node of size
+        size = createNode("size", None)
+        size.appendChild(createNode("width", str(W)))
+        size.appendChild(createNode("height", str(H)))
+        size.appendChild(createNode("depth", str(3)))
+        annotation.appendChild(size)
+
+        for box in boxesXXYY:
+            object_ = createNode("object", None)
+            object_.appendChild(createNode("name", class_names[int(box[0])]))
+            object_.appendChild(createNode("pose", "Unspecified"))
+            object_.appendChild(createNode("truncated", str(0)))
+            object_.appendChild(createNode("difficult", str(0)))
+            
+            # create bounding box
+            bndbox = createNode("bndbox", None)
+            bndbox.appendChild(createNode("xmin", str(int(box[1]))))
+            bndbox.appendChild(createNode("ymin", str(int(box[2]))))
+            bndbox.appendChild(createNode("xmax", str(int(box[3]))))
+            bndbox.appendChild(createNode("ymax", str(int(box[4]))))
+            object_.appendChild(bndbox)
+            
+            annotation.appendChild(object_)
+
+        doc.appendChild(annotation)
+
+        with open(os.path.join(xml_path, img_name.split('.')[0] + '.xml'), 'wb') as f:
+            f.write(doc.toprettyxml(indent='\t', encoding='utf-8'))
+
+
+def get_random_dataset(img_path, save_path, ratio):
     """
     Making training set and testing set.
     """
@@ -25,7 +87,7 @@ def get_random_dataset(img_path, save_path):
     for i in tqdm.tqdm(range(img_len)):
         img_dir = img_path + '/' + img_list[i] + '\n'
 
-        if i % 6 == 0:
+        if i % ratio == 0:
             test_set.append(img_dir)
         else:
             train_set.append(img_dir)
@@ -535,8 +597,20 @@ def xml2txt(class_names, xml_path, txt_path):
                 fp.writelines(line)
 
 
+def visual_bbox(img_path, save_path, o_min, o_max):
+    """
+    :param img_path: path of image you want to draw bbox
+    :param save_path: path of image that bboxes have been drawn
+    :param o_min: truple(x_min, y_min)
+    :param o_max: truple(x_max, y_max)
+    """
+    img = cv2.imread(img_path)
+
+    cv2.rectangle(img, o_min, o_max, (0, 255, 0), 4)
+    cv2.imwrite(save_path, img)
+
+
 def pltBbox(img_path, label_path):
-    print(img_path)
     img = cv2.imread(img_path)
     boxes = np.loadtxt(label_path, dtype=np.float).reshape(-1, 5)
     boxesXXYY = boxes.copy()
@@ -636,5 +710,15 @@ def parse_data_config(path):
 # rezie_images("data/custom/test/images", 
 #              "data/custom/shuffled/images")
 
-# get_random_dataset("data/custom/shuffled/images", 
-#                    "data/custom/shuffled")
+# get_random_dataset("data/custom/augmented/dusk/images", 
+#                    "data/custom/augmented/dusk",
+#                    ratio=11)
+
+# class_names = load_classes("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
+# print(class_names)
+# txt2xml(class_names, 
+#         "data/custom/test/images", 
+#         "data/custom/test/labels", 
+#         "data/custom/test/xmls")
+
+# visual_bbox("data/custom/test/images/IMG_20200601_081308.jpg", "data/custom/test/1.jpg", (528, 1709), (844, 1936))
