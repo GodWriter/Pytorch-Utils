@@ -12,6 +12,62 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def print_txt_category(txt_path):
+    """
+    Find the wrong category from all the txts.
+    """
+    names = os.listdir(txt_path)
+    dicts = {}
+
+    for name in tqdm.tqdm(names):
+        file_path = os.path.join(txt_path, name)
+        bbox = np.loadtxt(file_path, dtype=np.float).reshape(-1, 5)
+
+        for box in bbox:
+            if box[0] not in dicts:
+                dicts[box[0]] = 1
+            else:
+                dicts[box[0]] += 1
+    
+    print(dicts)
+
+
+def getAddedData(txt_path, save_path, prefix):
+    """
+    Find the source name of augmented data.
+    """
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
+    newLines = []
+    for line in tqdm.tqdm(lines):
+        name = line.split('/')[-1].split('-')[1:]
+
+        line = ""
+        for n in name[:-1]:
+            line += n + '-'
+        line += name[-1]
+        line = prefix + line
+
+        newLines.append(line)
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(newLines)
+        
+
+def createBash(command, times, save_path):
+    """
+    Create bash commands to solve the stopped problem.
+    """
+    lines = ""
+
+    for idx in tqdm.tqdm(range(0, times+1, 10)):
+        lines += command.replace('*', str(idx)) + '\n'
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(lines)
+
+
 def txt2xml(class_names, img_path, txt_path, xml_path):
     """
     Converting txt files to xml files.
@@ -126,7 +182,7 @@ def get_random_dataset(img_path, save_path, ratio):
 #     print("record_list: ", record_list)
 
 
-def rezie_images(img_path, save_path):
+def resize_images(img_path, save_path):
     """
     Resize images and save to the new path.
     """
@@ -139,13 +195,9 @@ def rezie_images(img_path, save_path):
         img = Image.open(old_dir)
         W, H = img.size
 
-        if W > 800 or H > 800:
-            ratio = max(W // 800, 1) # avoiding the case of 0
-            shape = (W // ratio, H // ratio)
-
-            # resize the image
-            img = img.resize(shape)
-            img.save(new_dir)
+        # resize the image
+        img = img.resize((416, 416))
+        img.save(new_dir)
 
 
 def delete_null_files(txt_path, img_path):
@@ -622,6 +674,8 @@ def pltBbox(img_path, label_path):
     boxesXXYY[:, 3] = (boxes[:, 1] + boxes[:, 3] / 2) * W
     boxesXXYY[:, 4] = (boxes[:, 2] + boxes[:, 4] / 2) * H
 
+    print(boxesXXYY)
+
     for box in boxesXXYY:
         cv2.rectangle(img, (int(box[1]), int(box[2])), (int(box[3]), int(box[4])), (0, 255, 0), 2)
 
@@ -653,66 +707,15 @@ def parse_data_config(path):
 # class_names = load_classes("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
 # print(class_names)
 # xml2txt(class_names, 
-#         "data/custom/augmented/dusk/xml",
-#         "data/custom/augmented/dusk/labels")
-
-# pltBbox("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images/IMG_20200528_110426.jpg", 
-#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels/IMG_20200528_110426.txt")
-
-# create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images", 
-#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/trains.txt")
-
-# convert_txt_format("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels", 
-#                    isLF=True)
-
-# remove_image_unlabelled("C:/Users/18917/Desktop/元宝数据标注/label",
-#                         "C:/Users/18917/Desktop/元宝数据标注/image",
-#                         "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
-
-# remove_label_invalid("C:/Users/18917/Desktop/元宝数据标注/label",
-#                      "C:/Users/18917/Desktop/元宝数据标注/image",
-#                      "C:/Users/18917/Desktop/元宝数据标注/unlabelled")
-
-# process_data_name("C:/Users/18917/Desktop/元宝数据标注/label", 
-#                   "C:/Users/18917/Desktop/元宝数据标注/image")
-
-# process_data_size("C:/Users/18917/Desktop/元宝数据标注/label", 
-#                   "C:/Users/18917/Desktop/元宝数据标注/image")
-
-# check("C:/Users/18917/Desktop/元宝数据标注/label", 
-#       "C:/Users/18917/Desktop/元宝数据标注/image")
-
-# rename_xml("C:/Users/18917/Desktop/元宝数据标注/fog/label", 'fog-')
-# rename_xml("C:/Users/18917/Desktop/元宝数据标注/dusk/label", 'dusk-')
-
-# rename_file("C:/Users/18917/Desktop/元宝数据标注/dusk/image", 'dusk-')
-
-# delete_null_files("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/labels",
-#                   "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/images")
-
-# remove_image_unlabelled("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
-#                         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images",
-#                         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/unlabelled")
-
-# remove_label_invalid("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
-#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images",
-#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/unlabelled")
-
-# check("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/labels",
-#       "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/test/images")
+#         "data/custom/weather/fog/xml",
+#         "data/custom/weather/fog/labels")
 
 # delete_null_files("data/custom/augmented/fog/labels",
 #                   "data/custom/augmented/fog/images")
 
-# create_dataset_txt("data/custom/augmented/dusk/images", 
-#                    "data/custom/augmented/dusk/name.txt")
+# create_dataset_txt("data/custom/weather/dusk/images", 
+#                    "data/custom/weather/dusk/dusk_test.txt")
 
-# rezie_images("data/custom/test/images", 
-#              "data/custom/shuffled/images")
-
-# get_random_dataset("data/custom/augmented/dusk/images", 
-#                    "data/custom/augmented/dusk",
-#                    ratio=11)
 
 # class_names = load_classes("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/classes.names")
 # print(class_names)
@@ -721,4 +724,11 @@ def parse_data_config(path):
 #         "data/custom/test/labels", 
 #         "data/custom/test/xmls")
 
-# visual_bbox("data/custom/test/images/IMG_20200601_081308.jpg", "data/custom/test/1.jpg", (528, 1709), (844, 1936))
+# getAddedData("data/custom/added.txt", "data/custom/added2.txt", "data/custom/shuffled/images/")
+
+# pltBbox("data/custom/images/DSC_0057.jpg","data/custom/labels/DSC_0057.txt")
+
+# create_dataset_txt("data/custom/test/images", 
+#                    "data/custom/test/test.txt")
+
+# print_txt_category("data/custom/test/labels")
