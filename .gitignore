@@ -1,8 +1,8 @@
 __pycache__
 .vscode
 
-DataAugment/data
-DataAugment/model_checkpoints
+DataAugment/WCT2/data
+DataAugment/WCT2/model_checkpoints
 
 DataTool/config
 DataTool/data
