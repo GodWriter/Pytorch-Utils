@@ -278,7 +278,7 @@ class WaveDecoder(nn.Module):
             return self.conv1_1(self.pad(x))
 
 
-def wct_core_segment():
+def wct_core_mask(content_feat, style_feat, content_mask, style_mask, device='cpu'):
     pass
 
 
@@ -287,10 +287,9 @@ def wct_core(cont_feat, styl_feat, weight=0.3, registers=None, device='cpu'):
     return targetFeature
 
 
-def feature_wct(content_feat, style_feat, content_segment=None, style_segment=None, label_set=None, 
-                label_indicator=None, weight=1, registers=None, alpha=1, device='cpu'):
-    if label_set is not None:
-        target_feature = wct_core_segment()
+def feature_wct(content_feat, style_feat, content_mask=None, style_mask=None, alpha=1, device='cpu'):
+    if content_mask is not None and style_mask is not None:
+        target_feature = wct_core_mask(content_feat, style_feat, content_mask, style_mask, device=device)
     else:
         target_feature = wct_core(content_feat, style_feat, device=device)
 
@@ -345,8 +344,7 @@ class WCT2:
                 feats['decoder'][level - 1] = x
         return feats, skips
 
-    def transfer(self, content, style, content_segment, style_segment, alpha=1):
-        label_set, label_indicator = None, None
+    def transfer(self, content, style, content_mask, style_mask, alpha=1):
         content_feat, content_skips = content, {}
         style_feats, style_skips = self.get_all_feature(style)
 
@@ -359,10 +357,8 @@ class WCT2:
             if 'encoder' in self.transfer_at and level in wct2_enc_level:
                 content_feat = feature_wct(content_feat, 
                                            style_feats['encoder'][level],
-                                           content_segment, 
-                                           style_segment,
-                                           label_set, 
-                                           label_indicator,
+                                           content_mask, 
+                                           style_mask,
                                            alpha=alpha, 
                                            device=self.device)
                 # self.print_('transfer at encoder {}'.format(level))
@@ -372,10 +368,8 @@ class WCT2:
                 for component in [0, 1, 2]:  # component: [LH, HL, HH]
                     content_skips[skip_level][component] = feature_wct(content_skips[skip_level][component], 
                                                                        style_skips[skip_level][component],
-                                                                       content_segment, 
-                                                                       style_segment,
-                                                                       label_set, 
-                                                                       label_indicator,
+                                                                       content_mask, 
+                                                                       style_mask,
                                                                        alpha=alpha, 
                                                                        device=self.device)
                 # self.print_('transfer at skip {}'.format(skip_level))
@@ -384,10 +378,8 @@ class WCT2:
             if 'decoder' in self.transfer_at and level in style_feats['decoder'] and level in wct2_dec_level:
                 content_feat = feature_wct(content_feat, 
                                            style_feats['decoder'][level],
-                                           content_segment, 
-                                           style_segment,
-                                           label_set, 
-                                           label_indicator,
+                                           content_mask, 
+                                           style_mask,
                                            alpha=alpha, 
                                            device=self.device)
                 # self.print_('transfer at decoder {}'.format(level))
@@ -448,11 +440,22 @@ def main(config):
                 
                 # transfer the image
                 with torch.no_grad():
-                    img = wct2.transfer(content, 
-                                        style, 
-                                        content_segment=None, 
-                                        style_segment=None,
-                                        alpha=config.alpha)
+                    if not config.use_mask:
+                        img = wct2.transfer(content, 
+                                            style, 
+                                            content_mask=None, 
+                                            style_mask=None,
+                                            alpha=config.alpha)
+                    else:
+                        content_mask = None
+                        style_mask = None
+                        img = wct2.transfer(content, 
+                                            style, 
+                                            content_mask=content_mask, 
+                                            style_mask=style_mask,
+                                            alpha=config.alpha)
+                
+                # save the transferred image
                 save_image(img.clamp_(0, 1), output_path, padding=0)
 
                 # resize the image to the original size
@@ -471,6 +474,7 @@ if __name__ == "__main__":
     parser.add_argument('--image_size', type=int, default=None)
     parser.add_argument('--alpha', type=float, default=1)
     parser.add_argument('--option_unpool', type=str, default='cat5', choices=['sum', 'cat5'])
+    parser.add_argument('--use_mask', type=bool, default=False)
     parser.add_argument('-e', '--transfer_at_encoder', action='store_true')
     parser.add_argument('-d', '--transfer_at_decoder', action='store_true')
     parser.add_argument('-s', '--transfer_at_skip', action='store_true')
