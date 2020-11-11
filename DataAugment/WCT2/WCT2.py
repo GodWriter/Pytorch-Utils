@@ -448,7 +448,11 @@ def main(config):
                                             alpha=config.alpha)
                     else:
                         content_mask = None
+                        content_mask.to(device)
+
                         style_mask = None
+                        style_mask.to(device)
+
                         img = wct2.transfer(content, 
                                             style, 
                                             content_mask=content_mask, 
