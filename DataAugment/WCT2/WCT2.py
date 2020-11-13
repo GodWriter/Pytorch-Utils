@@ -278,16 +278,36 @@ class WaveDecoder(nn.Module):
             return self.conv1_1(self.pad(x))
 
 
-def wct_core_bbox(content_feat, style_feat, bbox, device='cpu'):
+def wct_core_bbox(cont_feat, sty_feat, bbox, cont_weight=0.7, sty_weight=0.3, device='cpu'):
+    _, _, H, W = cont_feat.shape
+    bboxXXYY = bbox.detach().type(torch.cuda.IntTensor)
+
+    bboxXXYY[:, 1] = (bbox[:, 1] - bbox[:, 3] / 2) * W
+    bboxXXYY[:, 2] = (bbox[:, 2] - bbox[:, 4] / 2) * H
+    bboxXXYY[:, 3] = (bbox[:, 1] + bbox[:, 3] / 2) * W
+    bboxXXYY[:, 4] = (bbox[:, 2] + bbox[:, 4] / 2) * H
+
+    contMask = torch.ones(H, W)
+    contMask = contMask.to(device)
+
+    styMask = torch.zeros(H, W)
+    styMask = styMask.to(device)
+
+    for box in bboxXXYY:
+        xmin, ymin, xmax, ymax = box[1], box[2], box[3], box[4]
+        contMask[ymin: ymax, xmin: xmax] = cont_weight
+        styMask[ymin: ymax, xmin: xmax] = sty_weight
+    
+    targetFeature = contMask * cont_feat + styMask * sty_feat
+    return targetFeature
+
+
+def wct_core_mask(cont_feat, sty_feat, cont_mask, styl_mask, weight=0.3, device='cpu'):
     pass
 
 
-def wct_core_mask(content_feat, style_feat, content_mask, style_mask, device='cpu'):
-    pass
-
-
-def wct_core(cont_feat, styl_feat, weight=0.3, registers=None, device='cpu'):
-    targetFeature = 0.7 * cont_feat + weight * styl_feat
+def wct_core(cont_feat, sty_feat, weight=0.3, registers=None, device='cpu'):
+    targetFeature = 0.7 * cont_feat + weight * sty_feat
     return targetFeature
 
 
@@ -452,14 +472,11 @@ def main(config):
                     if config.use_mask:
                         pass
                     elif config.use_bbox:
-                        # content_mask = None
-                        # content_mask.to(device)
-
-                        # style_mask = None
-                        # style_mask.to(device)
-
                         label_file = os.path.join(config.label, fname.split('.')[0] + '.txt')
-                        bbox = np.loadtxt(config.label, dtype=np.float).reshape(-1, 5)
+
+                        bbox = np.loadtxt(label_file, dtype=np.float).reshape(-1, 5)
+                        bbox = torch.from_numpy(bbox)
+                        bbox = bbox.to(device)
 
                         img = wct2.transfer(content, 
                                             style, 
