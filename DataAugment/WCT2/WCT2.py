@@ -278,6 +278,10 @@ class WaveDecoder(nn.Module):
             return self.conv1_1(self.pad(x))
 
 
+def wct_core_bbox(content_feat, style_feat, bbox, device='cpu'):
+    pass
+
+
 def wct_core_mask(content_feat, style_feat, content_mask, style_mask, device='cpu'):
     pass
 
@@ -288,8 +292,10 @@ def wct_core(cont_feat, styl_feat, weight=0.3, registers=None, device='cpu'):
 
 
 def feature_wct(content_feat, style_feat, content_mask=None, style_mask=None, bbox=None, alpha=1, device='cpu'):
-    if content_mask is not None and style_mask is not None:
+    if config.use_mask:
         target_feature = wct_core_mask(content_feat, style_feat, content_mask, style_mask, device=device)
+    elif config.use_bbox:
+        target_feature = wct_core_bbox(content_feat, style_feat, bbox, device=device)
     else:
         target_feature = wct_core(content_feat, style_feat, device=device)
 
@@ -443,14 +449,9 @@ def main(config):
                 
                 # transfer the image
                 with torch.no_grad():
-                    if not config.use_mask:
-                        img = wct2.transfer(content, 
-                                            style, 
-                                            content_mask=None, 
-                                            style_mask=None,
-                                            bbox=None,
-                                            alpha=config.alpha)
-                    else:
+                    if config.use_mask:
+                        pass
+                    elif config.use_bbox:
                         # content_mask = None
                         # content_mask.to(device)
 
@@ -465,6 +466,13 @@ def main(config):
                                             content_mask=content_mask, 
                                             style_mask=style_mask,
                                             bbox=bbox,
+                                            alpha=config.alpha)
+                    else:
+                        img = wct2.transfer(content, 
+                                            style, 
+                                            content_mask=None, 
+                                            style_mask=None,
+                                            bbox=None,
                                             alpha=config.alpha)
                 
                 # save the transferred image
@@ -488,6 +496,7 @@ if __name__ == "__main__":
     parser.add_argument('--alpha', type=float, default=1)
     parser.add_argument('--option_unpool', type=str, default='cat5', choices=['sum', 'cat5'])
     parser.add_argument('--use_mask', type=bool, default=False)
+    parser.add_argument('--use_bbox', type=bool, default=False)
     parser.add_argument('-e', '--transfer_at_encoder', action='store_true')
     parser.add_argument('-d', '--transfer_at_decoder', action='store_true')
     parser.add_argument('-s', '--transfer_at_skip', action='store_true')
