@@ -287,7 +287,7 @@ def wct_core(cont_feat, styl_feat, weight=0.3, registers=None, device='cpu'):
     return targetFeature
 
 
-def feature_wct(content_feat, style_feat, content_mask=None, style_mask=None, alpha=1, device='cpu'):
+def feature_wct(content_feat, style_feat, content_mask=None, style_mask=None, bbox=None, alpha=1, device='cpu'):
     if content_mask is not None and style_mask is not None:
         target_feature = wct_core_mask(content_feat, style_feat, content_mask, style_mask, device=device)
     else:
@@ -344,7 +344,7 @@ class WCT2:
                 feats['decoder'][level - 1] = x
         return feats, skips
 
-    def transfer(self, content, style, content_mask, style_mask, alpha=1):
+    def transfer(self, content, style, content_mask, style_mask, bbox, alpha=1):
         content_feat, content_skips = content, {}
         style_feats, style_skips = self.get_all_feature(style)
 
@@ -359,6 +359,7 @@ class WCT2:
                                            style_feats['encoder'][level],
                                            content_mask, 
                                            style_mask,
+                                           bbox,
                                            alpha=alpha, 
                                            device=self.device)
                 # self.print_('transfer at encoder {}'.format(level))
@@ -370,6 +371,7 @@ class WCT2:
                                                                        style_skips[skip_level][component],
                                                                        content_mask, 
                                                                        style_mask,
+                                                                       bbox,
                                                                        alpha=alpha, 
                                                                        device=self.device)
                 # self.print_('transfer at skip {}'.format(skip_level))
@@ -380,6 +382,7 @@ class WCT2:
                                            style_feats['decoder'][level],
                                            content_mask, 
                                            style_mask,
+                                           bbox,
                                            alpha=alpha, 
                                            device=self.device)
                 # self.print_('transfer at decoder {}'.format(level))
@@ -445,18 +448,23 @@ def main(config):
                                             style, 
                                             content_mask=None, 
                                             style_mask=None,
+                                            bbox=None,
                                             alpha=config.alpha)
                     else:
-                        content_mask = None
-                        content_mask.to(device)
+                        # content_mask = None
+                        # content_mask.to(device)
 
-                        style_mask = None
-                        style_mask.to(device)
+                        # style_mask = None
+                        # style_mask.to(device)
+
+                        label_file = os.path.join(config.label, fname.split('.')[0] + '.txt')
+                        bbox = np.loadtxt(config.label, dtype=np.float).reshape(-1, 5)
 
                         img = wct2.transfer(content, 
                                             style, 
                                             content_mask=content_mask, 
                                             style_mask=style_mask,
+                                            bbox=bbox,
                                             alpha=config.alpha)
                 
                 # save the transferred image
@@ -470,10 +478,11 @@ def main(config):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--content', type=str, default='./examples/content')
+    parser.add_argument('--content', type=str, default='data/content')
     parser.add_argument('--content_segment', type=str, default=None)
-    parser.add_argument('--style', type=str, default='./examples/style')
+    parser.add_argument('--style', type=str, default='data/style')
     parser.add_argument('--style_segment', type=str, default=None)
+    parser.add_argument('--label', type=str, default='data/label')
     parser.add_argument('--output', type=str, default='./outputs')
     parser.add_argument('--image_size', type=int, default=None)
     parser.add_argument('--alpha', type=float, default=1)
