@@ -463,8 +463,8 @@ def main(config):
 
                         img = wct2.transfer(content, 
                                             style, 
-                                            content_mask=content_mask, 
-                                            style_mask=style_mask,
+                                            content_mask=None, 
+                                            style_mask=None,
                                             bbox=bbox,
                                             alpha=config.alpha)
                     else:
