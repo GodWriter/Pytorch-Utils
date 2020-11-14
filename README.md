@@ -25,3 +25,6 @@ python detect.py --image_folder data/samples/ --weights_path checkpoints/yolov3_
 python WCT2.py --option_unpool cat5 -a --content data\content\  --style data\style\fog.jpg --output data\output --verbose
 ```
 
+```bash
+python WCT2.py --option_unpool cat5 -a --content C:\Users\18917\Documents\Python Scripts\pytorch\Lab\PyTorch-YOLOv3-master\data\custom\images  --style data\style\fog.jpg --output C:\Users\18917\Documents\Python Scripts\pytorch\Lab\PyTorch-YOLOv3-master\data\custom\augmented\rand_fog\images --use_bbox True --label C:\Users\18917\Documents\Python Scripts\pytorch\Lab\PyTorch-YOLOv3-master\data\custom\labels --verbose
+```

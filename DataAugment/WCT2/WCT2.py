@@ -302,6 +302,37 @@ def wct_core_bbox(cont_feat, sty_feat, bbox, cont_weight=0.7, sty_weight=0.3, de
     return targetFeature
 
 
+def wct_core_random_bbox(cont_feat, sty_feat, bbox, cont_weight=0.7, sty_weight=0.3, device='cpu'):
+    _, _, H, W = cont_feat.shape
+    bboxXXYY = bbox.detach().type(torch.cuda.IntTensor)
+
+    bboxXXYY[:, 1] = (bbox[:, 1] - bbox[:, 3] / 2) * W
+    bboxXXYY[:, 2] = (bbox[:, 2] - bbox[:, 4] / 2) * H
+    bboxXXYY[:, 3] = (bbox[:, 1] + bbox[:, 3] / 2) * W
+    bboxXXYY[:, 4] = (bbox[:, 2] + bbox[:, 4] / 2) * H
+
+    contMask = torch.ones(H, W)
+    contMask = contMask.to(device)
+
+    styMask = torch.zeros(H, W)
+    styMask = styMask.to(device)
+
+    for box in bboxXXYY:
+        xmin, ymin, xmax, ymax = box[1], box[2], box[3], box[4]
+
+        np.random.seed(0)
+        xmin = xmin - np.random.randint(30, 60)
+        ymin = ymin - np.random.randint(30, 60)
+        xmax = xmax + np.random.randint(30, 60)
+        ymax = ymax + np.random.randint(30, 60)
+
+        contMask[ymin: ymax, xmin: xmax] = cont_weight
+        styMask[ymin: ymax, xmin: xmax] = sty_weight
+    
+    targetFeature = contMask * cont_feat + styMask * sty_feat
+    return targetFeature
+
+
 def wct_core_mask(cont_feat, sty_feat, cont_mask, styl_mask, weight=0.3, device='cpu'):
     pass
 
@@ -315,7 +346,7 @@ def feature_wct(content_feat, style_feat, content_mask=None, style_mask=None, bb
     if config.use_mask:
         target_feature = wct_core_mask(content_feat, style_feat, content_mask, style_mask, device=device)
     elif config.use_bbox:
-        target_feature = wct_core_bbox(content_feat, style_feat, bbox, device=device)
+        target_feature = wct_core_random_bbox(content_feat, style_feat, bbox, device=device)
     else:
         target_feature = wct_core(content_feat, style_feat, device=device)
 
