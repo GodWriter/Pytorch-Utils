@@ -3,6 +3,7 @@ __pycache__
 
 DataAugment/WCT2/data
 DataAugment/WCT2/model_checkpoints
+DataAugment/WCT2/run.sh
 
 DataTool/config
 DataTool/data
