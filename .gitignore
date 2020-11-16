@@ -5,5 +5,7 @@ DataAugment/WCT2/data
 DataAugment/WCT2/model_checkpoints
 DataAugment/WCT2/run.sh
 
+DataAugment/Defog/data
+
 DataTool/config
 DataTool/data
