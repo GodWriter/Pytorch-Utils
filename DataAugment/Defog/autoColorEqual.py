@@ -103,4 +103,4 @@ def zmIceColor(I, ratio=4, radius=3):
 
 if __name__ == '__main__':
     m = zmIceColor(cv2.imread("data/fog/1.jpg") / 255.0) * 255
-    cv2.imwrite('data/output/zmIce.jpg', m)
+    cv2.imwrite('data/output/autoColorEqual.jpg', m)
