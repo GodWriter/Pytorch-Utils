@@ -182,7 +182,7 @@ def get_random_dataset(img_path, save_path, ratio):
 #     print("record_list: ", record_list)
 
 
-def resize_images(img_path, save_path):
+def resize_images(img_path, save_path, new_size=416):
     """
     Resize images and save to the new path.
     """
@@ -193,10 +193,9 @@ def resize_images(img_path, save_path):
         new_dir = os.path.join(save_path, img_name)
 
         img = Image.open(old_dir)
-        W, H = img.size
 
         # resize the image
-        img = img.resize((416, 416))
+        img = img.resize((new_size, new_size))
         img.save(new_dir)
 
 
@@ -732,3 +731,7 @@ def parse_data_config(path):
 #                    "data/custom/test/test.txt")
 
 # print_txt_category("data/custom/test/labels")
+
+# resize_images("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/images", 
+#               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/resized416x416",
+#               new_size=416)
