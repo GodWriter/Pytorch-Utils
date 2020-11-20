@@ -6,6 +6,9 @@ DataAugment/WCT2/model_checkpoints
 DataAugment/WCT2/run.sh
 
 DataAugment/Defog/data
+DataAugment/Defog/__pycache__
+
+DataAugment/DeBlur/data
 
 DataTool/config
 DataTool/data
