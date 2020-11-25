@@ -33,9 +33,17 @@ def main(args):
 
     
     for batch_i, (images, labels) in enumerate(train_loader):
-        print("batch_i: ", batch_i)
-        print("images: ", images)
-        print("labels: ", labels)
+        images = images.to(args.device)
+        labels = labels.to(args.device)
+
+        loss = model.fit(images, labels)
+
+        n_iter = (args.epochs - 1) * len(train_loader) + batch_i + 1
+        writer.add_scalar('Train/loss', loss, n_iter)
+
+        print('Training Epoch: {epoch} [{trained_samples}/{total_samples}]'.format(epoch=args.epoch,
+                                                                                   trained_samples=batch_i*args.batch_size + len(images),
+                                                                                   total_samples=len(train_loader.dataset)))
 
 
 if __name__ == "__main__":
@@ -43,11 +51,12 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--n_cpu", type=int, default=8, help="dataloader threads number")
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
+    parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
     parser.add_argument("--num_class", type=int, default=4, help="number of classes you want to train")
     parser.add_argument("--vgg_type", type=int, default=11, help="you can choose from 11, 13, 16, 19")
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--log", type=str, default="logs/Vgg")
+    parser.add_argument("--logs", type=str, default="logs/Vgg")
     parser.add_argument("--train_path", type=str, default="data/weather/train.txt", help="txt path saving image paths")
     parser.add_argument("--test_path", type=str, default="data/weather/test.txt", help="txt path saving image paths")
     args = parser.parse_args()
