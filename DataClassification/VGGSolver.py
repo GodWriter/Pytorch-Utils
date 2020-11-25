@@ -16,8 +16,7 @@ def main(args):
     writer = SummaryWriter(args.logs)
 
     transform = transforms.Compose([transforms.Resize((args.img_size, args.img_size), Image.BICUBIC),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+                                    transforms.ToTensor()])
 
     train_set = DataLoader(args.train_path, transform)
     train_loader = torch.utils.data.DataLoader(train_set,
@@ -51,7 +50,7 @@ def main(args):
                                                                                        trained_samples=batch_i*args.batch_size + len(images),
                                                                                        total_samples=len(train_loader.dataset)))
 
-        for batch_i, (images, labels) in enumerate(valid_loader):
+        for batch_i, (images, labels) in enumerate(train_loader):
             images = images.to(args.device)
             labels = labels.squeeze(1).to(args.device)
 
@@ -60,8 +59,8 @@ def main(args):
             correct_3 += c_3
             correct_1 += c_1
 
-        print("Top 1 err: ", 1 - correct_1 / len(valid_loader.dataset))
-        print("Top 3 err: ", 1 - correct_3 / len(valid_loader.dataset))
+        print("Top 1 err: ", 1 - correct_1 / len(train_loader.dataset))
+        print("Top 3 err: ", 1 - correct_3 / len(train_loader.dataset))
 
 
 if __name__ == "__main__":
