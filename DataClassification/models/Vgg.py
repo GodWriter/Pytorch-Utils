@@ -35,6 +35,8 @@ class VGGRapper(object):
         self.args = args
         self.vgg = VGG(self.make_layers(cfg[self.args.vgg_type], batch_norm=True), 
                        num_class=self.args.num_class)
+        
+        self.vgg = self.vgg.to(self.args.device)
     
     def make_layers(self, cfg, batch_norm=False):
         layers = []
