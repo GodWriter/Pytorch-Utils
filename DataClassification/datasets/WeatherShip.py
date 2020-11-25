@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 
 class DataLoader(Dataset):
-    def __init__(self, train_path, transform_=None, img_size=416):
+    def __init__(self, train_path, transform_=None):
         with open(train_path, "r") as file:
             self.img_files = file.readlines()
 
