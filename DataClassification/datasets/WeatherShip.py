@@ -32,7 +32,7 @@ class DataLoader(Dataset):
         return self.length
 
 
-def create_dataset(file_path):
+def create_dataset1(file_path):
     SPLIT = ['train.txt', 'test.txt']
     WEATHER = {'0' : 'cloudy', '1' : 'dusky', '2' : 'foggy', '3' : 'sunny'}
 
@@ -62,4 +62,53 @@ def create_dataset(file_path):
                 fp.writelines(lines)
 
 
-# create_dataset('data/weather')
+def create_dataset2(file_path):
+    SPLIT = ['train.txt', 'test.txt']
+    WEATHER = {'0' : 'cloudy', '1' : 'dusky', '2' : 'foggy', '3' : 'sunny'}
+
+    NUM_TRAIN_PER_CAT = 100
+    NUM_TEST_PER_CAT = 30
+
+    for cat_id, cat in tqdm.tqdm(WEATHER.items()):
+        img_path = file_path + '/' + cat
+        img_list = os.listdir(img_path)
+
+        pos = 0 # 用于指示当前文件夹遍历到的图片位置
+        size = len(img_list)
+
+        train_path = os.path.join(file_path, SPLIT[0])
+        test_path = os.path.join(file_path, SPLIT[1])
+
+        num = 0
+        num_train = 0
+        num_test = 0
+
+        train_lines = ""
+        test_lines = ""
+
+        while num < size and num_train < NUM_TRAIN_PER_CAT and num_test < NUM_TEST_PER_CAT:
+            train_line = cat_id + ' ' + img_path + '/' + img_list[num] + '\n'
+            test_line = cat_id + ' ' + img_path + '/' + img_list[num+1] + '\n'
+
+            train_lines += train_line
+            test_lines += test_line
+
+            num += 2
+            num_train += 1
+            num_test += 1
+        
+        while num < size and num_train < NUM_TRAIN_PER_CAT:
+            train_line = cat_id + ' ' + img_path + '/' + img_list[num] + '\n'
+            train_lines += train_line
+
+            num += 1
+            num_train += 1
+        
+        with open(train_path, 'a+') as fp:
+            fp.writelines(train_lines)
+
+        with open(test_path, 'a+') as fp:
+            fp.writelines(test_lines)
+
+
+# create_dataset2('data/weather')

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-cfg = {11 : [64,     'M', 128,      'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
+cfg = {11 : [16,     'M', 32,       'M', 64,  64,            'M', 128, 128,           'M', 128, 128,           'M'],
        13 : [64, 64, 'M', 128, 128, 'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
        16 : [64, 64, 'M', 128, 128, 'M', 256, 256, 256,      'M', 512, 512, 512,      'M', 512, 512, 512,      'M'],
        19 : [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']}
@@ -13,13 +13,13 @@ class VGG(nn.Module):
         super().__init__()
 
         self.features = features
-        self.classifier = nn.Sequential(nn.Linear(32768, 4096),
+        self.classifier = nn.Sequential(nn.Linear(8192, 1024),
                                         nn.ReLU(inplace=True),
                                         nn.Dropout(),
-                                        nn.Linear(4096, 4096),
+                                        nn.Linear(1024, 1024),
                                         nn.ReLU(inplace=True),
                                         nn.Dropout(),
-                                        nn.Linear(4096, num_class))
+                                        nn.Linear(1024, num_class))
 
     def forward(self, x):
         output = self.features(x)

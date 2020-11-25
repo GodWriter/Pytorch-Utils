@@ -79,7 +79,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
-    parser.add_argument("--n_cpu", type=int, default=4, help="dataloader threads number")
+    parser.add_argument("--n_cpu", type=int, default=8, help="dataloader threads number")
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument('--learning_rate', type=float, default=1e-6)
     parser.add_argument("--img_size", type=int, default=256, help="size of each image dimension")
