@@ -13,7 +13,6 @@ class DataLoader(Dataset):
         with open(train_path, "r") as file:
             self.img_files = file.readlines()
 
-        self.img_size = img_size
         self.length = len(self.img_files)
         self.transform = transform_
 

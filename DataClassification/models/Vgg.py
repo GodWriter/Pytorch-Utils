@@ -1,9 +1,6 @@
-import time
-
 import torch
 import torch.nn as nn
 
-from tensorboardX import SummaryWriter
 
 cfg = {11 : [64,     'M', 128,      'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
        13 : [64, 64, 'M', 128, 128, 'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
@@ -16,7 +13,7 @@ class VGG(nn.Module):
         super().__init__()
 
         self.features = features
-        self.classifier = nn.Sequential(nn.Linear(512, 4096),
+        self.classifier = nn.Sequential(nn.Linear(32768, 4096),
                                         nn.ReLU(inplace=True),
                                         nn.Dropout(),
                                         nn.Linear(4096, 4096),
@@ -40,7 +37,6 @@ class VGGRapper(object):
         self.vgg = VGG(self.make_layers(cfg[self.args.vgg_type], batch_norm=True), 
                        num_class=self.args.num_class).to(self.args.device)
         
-        self.writer = SummaryWriter(self.args.logs)
         self.optimizer = torch.optim.Adam(self.vgg.parameters(), self.args.learning_rate)
         self.loss = nn.CrossEntropyLoss()
     
@@ -61,8 +57,7 @@ class VGGRapper(object):
 
         return nn.Sequential(*layers)
 
-    def fit(self, images, labels):
-        start = time.time()
+    def train(self, images, labels):
         self.vgg.train()
 
         self.optimizer.zero_grad()
@@ -72,5 +67,17 @@ class VGGRapper(object):
         self.optimizer.step()
 
         return loss.item()
+
+    def valid(self, images, labels):
+        self.vgg.eval()
+
+        with torch.no_grad():
+            outputs = self.vgg(images)
+            _, pred = outputs.topk(3, 1, largest=True, sorted=True)
+
+            labels = labels.view(labels.size(0), -1).expand_as(pred)
+            correct = pred.eq(labels).float()
+
+            return correct[:, :3].sum(), correct[:, :1].sum()
 
         
