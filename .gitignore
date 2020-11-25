@@ -15,5 +15,6 @@ DataTool/data
 
 DataClassification/logs
 DataClassification/data
+DataClassification/checkpoints
 DataClassification/models/__pycache__
 DataClassification/datasets/__pycache__
