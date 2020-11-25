@@ -12,3 +12,5 @@ DataAugment/DeBlur/data
 
 DataTool/config
 DataTool/data
+
+DataClassification/models/__pycache__

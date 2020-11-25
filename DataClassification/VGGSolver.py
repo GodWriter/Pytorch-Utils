@@ -1,10 +1,12 @@
 import os
+import argparse
 
-from models import Vgg
+from models.Vgg import VGGRapper
+from datasets.WeatherShip import DataLoader
 
 
 def main(args):
-    model = Vgg(args)
+    model = VGGRapper(args)
 
     dataset = DataLoader(args.train_path)
     dataloader = torch.utils.data.DataLoader(dataset,
@@ -25,6 +27,8 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--batch_size", type=int, default=3, help="size of each image batch")
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
+    parser.add_argument("--num_class", type=int, default=4, help="number of classes you want to train")
+    parser.add_argument("--vgg_type", type=int, default=11, help="you can choose from 11, 13, 16, 19")
     parser.add_argument("--log", type=str, default="logs/Vgg")
     parser.add_argument("--train_path", type=str, default="config/train.txt", help="txt path saving image paths")
     args = parser.parse_args()
