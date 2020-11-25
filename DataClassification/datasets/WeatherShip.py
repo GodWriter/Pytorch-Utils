@@ -1,5 +1,6 @@
-import random
 import os
+import tqdm
+import random
 import numpy as np
 
 import torch
@@ -50,3 +51,36 @@ class DataLoader(Dataset):
 
     def __len__(self):
         return len(self.img_files)
+
+
+def create_dataset(file_path):
+    SPLIT = ['train.txt', 'test.txt']
+    WEATHER = {'0' : 'cloudy', '1' : 'dusky', '2' : 'foggy', '3' : 'sunny'}
+
+    NUM_TRAIN_PER_CAT = 100
+    NUM_TEST_PER_CAT = 30
+
+    for cat_id, cat in tqdm.tqdm(WEATHER.items()):
+        img_path = file_path + '/' + cat
+        img_list = os.listdir(img_path)
+
+        pos = 0 # 用于指示当前文件夹遍历到的图片位置
+        size = len(img_list)
+        step = size // (NUM_TRAIN_PER_CAT + NUM_TEST_PER_CAT)
+
+        for split, nums in zip(SPLIT, [NUM_TRAIN_PER_CAT, NUM_TEST_PER_CAT]):
+            lab_path = os.path.join(file_path, split)
+
+            lines = ""
+            while pos < size and nums > 0:
+                line = cat_id + ' ' + img_path + '/' + img_list[pos] + '\n'
+                lines += line
+
+                pos += step
+                nums -= 1
+            
+            with open(lab_path, 'a+') as fp:
+                fp.writelines(lines)
+
+
+# create_dataset('data/weather')
