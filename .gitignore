@@ -10,6 +10,8 @@ DataAugment/Defog/__pycache__
 
 DataAugment/DeBlur/data
 
+DataAugment/ImgAug/data
+
 DataTool/config
 DataTool/data
 
