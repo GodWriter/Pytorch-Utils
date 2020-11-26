@@ -158,7 +158,7 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint_interval", type=int, default=10, help="interval between saving model weights")
     parser.add_argument("--train_path", type=str, default="data/weather/chips_train.txt", help="txt path saving image paths")
     parser.add_argument("--test_path", type=str, default="data/weather/test.txt", help="txt path saving image paths")
-    parser.add_argument("--test_image", type=str, default="data/weather/test7.jpg", help="test image path")
+    parser.add_argument("--test_image", type=str, default="data/weather/test.jpg", help="test image path")
     parser.add_argument("--weight_path", type=str, default="checkpoints/vgg-chips-adam-bs64/vgg_done.pth", help="model to test")
     args = parser.parse_args()
     print(args)

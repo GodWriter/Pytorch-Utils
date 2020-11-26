@@ -33,7 +33,7 @@ class DataLoader(Dataset):
 
 
 def create_dataset1(file_path):
-    SPLIT = ['train.txt', 'test.txt']
+    SPLIT = ['train_random.txt', 'test_random.txt']
     WEATHER = {'0' : 'cloudy', '1' : 'dusky', '2' : 'foggy', '3' : 'sunny'}
 
     NUM_TRAIN_PER_CAT = 100
@@ -111,4 +111,4 @@ def create_dataset2(file_path):
             fp.writelines(test_lines)
 
 
-# create_dataset2('data/weather')
+# create_dataset1('data/weather')
