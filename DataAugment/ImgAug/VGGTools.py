@@ -8,14 +8,43 @@ from imgaug import augmenters as iaa
 from PIL import Image
 
 
+def get_chips_augment(txt_path, img_size=640, chip_num=10, save_name="chips", save_txt_path="chips.txt"):
+    """
+    Get chips of the images.
+    """
+    STRIDE = img_size // chip_num
+
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
+    new_lines = []
+    for line in tqdm.tqdm(lines):
+        cat_id, img_path = line.rstrip().split(' ')
+
+        image = np.asarray(Image.open(img_path).convert('RGB').resize((img_size, img_size)))
+        img_path = img_path.replace('cloudy', save_name).replace('dusky', save_name).replace('foggy', save_name).replace('sunny', save_name)
+
+        for row in range(0, img_size, STRIDE):
+            for col in range(0, img_size, STRIDE):
+                new_path = img_path[:-4] + '_' + str(row) + '_' + str(col) + img_path[-4:]
+                new_line = cat_id + ' ' + new_path + '\n'
+
+                new_img = image[row: row+STRIDE, col: col+STRIDE, :]
+                new_img = Image.fromarray(new_img)
+                new_img.save(new_path)
+
+                new_lines.append(new_line)
+
+    with open(save_txt_path, 'a+') as fp:
+        fp.writelines(new_lines)
+
+
 def augment1(txt_path, save_txt_path):
     """
     Augment data from the txt file.
     """
-    seq = iaa.Sequential([iaa.CropAndPad(percent=(-0.2, 0.2), pad_mode="edge"),
-                iaa.ElasticTransformation(alpha=90, sigma=9),
-                iaa.Cutout()],
-                random_order=True)
+    seq = iaa.Sequential([iaa.ElasticTransformation(alpha=90, sigma=9),
+                          iaa.Cutout()],random_order=False)
 
     with open(txt_path, 'r') as fp:
         lines = fp.readlines()
@@ -42,3 +71,4 @@ def augment1(txt_path, save_txt_path):
 
 
 # augment1("data/weather/train.txt", "data/weather/augment.txt")
+# get_chips_augment(txt_path="data/weather/test.txt", save_name="chips_test", save_txt_path="data/weather/chips_test.txt")

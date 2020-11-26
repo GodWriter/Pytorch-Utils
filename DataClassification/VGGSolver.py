@@ -1,4 +1,6 @@
 import os
+import tqdm
+import numpy
 import argparse
 
 import torch
@@ -11,7 +13,7 @@ from models.Vgg import VGGRapper
 from datasets.WeatherShip import DataLoader
 
 
-def main(args):
+def train(args):
     model = VGGRapper(args)
     writer = SummaryWriter(args.logs)
 
@@ -60,8 +62,8 @@ def main(args):
                 correct_3 += c_3.item()
                 correct_1 += c_1.item()
             
-            top_1_error = 1 - correct_1 / len(train_loader.dataset)
-            top_3_error = 1 - correct_3 / len(train_loader.dataset)
+            top_1_error = 1 - correct_1 / len(valid_loader.dataset)
+            top_3_error = 1 - correct_3 / len(valid_loader.dataset)
 
             writer.add_scalar('Valid/Top_1_error', top_1_error, epoch)
             writer.add_scalar('Valid/Top_3_error', top_3_error, epoch)
@@ -76,22 +78,94 @@ def main(args):
     writer.close()
 
 
+def test_chip(args):
+    WEATHER = {'0' : '阴天', '1' : '黄昏', '2' : '雾天', '3' : '晴天'}
+    
+    with open(args.test_path, 'r') as fp:
+        lines = fp.readlines()
+
+    model = VGGRapper(args)
+    transform = transforms.Compose([transforms.Resize((args.img_size, args.img_size), Image.BICUBIC),
+                                    transforms.ToTensor()])
+    
+    model.vgg.load_state_dict(torch.load(args.weight_path))
+    model.vgg.eval()
+
+    correct = 0
+    for line in tqdm.tqdm(lines):
+        cat_id, img_path = line.rstrip().split(' ')
+
+        img = transform(Image.open(img_path).convert('RGB')).unsqueeze(0).to(args.device)
+        outputs = model.vgg(img)
+
+        _, pred = outputs.max(1)
+        pred = pred.detach().cpu().numpy()
+
+        if str(pred[0]) == cat_id:
+            correct += 1
+            print(correct)
+
+
+def test_list(args):
+    IMG_SIZE = 320
+    CHIP_NUM = 10
+    STRIDE = IMG_SIZE // CHIP_NUM
+
+    with open(args.test_path, 'r') as fp:
+        lines = fp.readlines()
+
+    model = VGGRapper(args)
+    transform = transforms.Compose([transforms.Resize((IMG_SIZE, IMG_SIZE), Image.BICUBIC),
+                                    transforms.ToTensor()])
+    
+    model.vgg.load_state_dict(torch.load(args.weight_path))
+    model.vgg.eval()
+
+    correct = 0
+    for line in tqdm.tqdm(lines):
+        cat_id, img_path = line.rstrip().split(' ')
+        img = transform(Image.open(img_path).convert('RGB')).unsqueeze(0).to(args.device)
+
+        labels = [0 for _ in range(4)]
+        for row in range(0, IMG_SIZE, STRIDE):
+            for col in range(0, IMG_SIZE, STRIDE):
+                outputs = model.vgg(img[:, :, row: row+STRIDE, col: col+STRIDE])
+
+                _, pred = outputs.max(1)
+                pred = pred.detach().cpu().numpy()[0]
+
+                labels[pred] += 1
+        
+        if labels.index(max(labels)) == int(cat_id):
+            correct += 1
+    
+    print("Accuracy: ", correct / len(lines))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--module", type=str, default="test_list", help="you can choose from train, test_list, test_chip, test_single")
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--n_cpu", type=int, default=8, help="dataloader threads number")
-    parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
-    parser.add_argument('--learning_rate', type=float, default=1e-6)
-    parser.add_argument("--img_size", type=int, default=256, help="size of each image dimension")
+    parser.add_argument("--batch_size", type=int, default=64, help="size of each image batch")
+    parser.add_argument('--lr', type=float, default=1e-6)
+    parser.add_argument("--img_size", type=int, default=32, help="size of each image dimension")
     parser.add_argument("--num_class", type=int, default=4, help="number of classes you want to train")
-    parser.add_argument("--vgg_type", type=int, default=11, help="you can choose from 11, 13, 16, 19")
+    parser.add_argument("--vgg_type", type=int, default=13, help="you can choose from 11, 13, 16, 19")
     parser.add_argument("--device", type=str, default="cuda:0")
-    parser.add_argument("--logs", type=str, default="logs/Vgg")
+    parser.add_argument("--logs", type=str, default="logs/Vgg/vgg-chips-bs64")
     parser.add_argument("--evaluation_interval", type=int, default=2, help="interval evaluations on validation set")
     parser.add_argument("--checkpoint_interval", type=int, default=10, help="interval between saving model weights")
-    parser.add_argument("--train_path", type=str, default="data/weather/train.txt", help="txt path saving image paths")
+    parser.add_argument("--train_path", type=str, default="data/weather/chips_train.txt", help="txt path saving image paths")
     parser.add_argument("--test_path", type=str, default="data/weather/test.txt", help="txt path saving image paths")
+    parser.add_argument("--test_image", type=str, default="data/weather/test7.jpg", help="test image path")
+    parser.add_argument("--weight_path", type=str, default="checkpoints/vgg-chips-adam-bs64/vgg_done.pth", help="model to test")
     args = parser.parse_args()
     print(args)
 
-    main(args)
+    if args.module == "train":
+        train(args)
+    elif args.module == "test_list":
+        test_list(args)
+    elif args.module == "test_chip":
+        test_chip(args)

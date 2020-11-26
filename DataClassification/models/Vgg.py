@@ -13,7 +13,7 @@ class VGG(nn.Module):
         super().__init__()
 
         self.features = features
-        self.classifier = nn.Sequential(nn.Linear(8192, 1024),
+        self.classifier = nn.Sequential(nn.Linear(512, 1024),
                                         nn.ReLU(inplace=True),
                                         nn.Dropout(),
                                         nn.Linear(1024, 1024),
@@ -34,10 +34,10 @@ class VGGRapper(object):
         super().__init__()
 
         self.args = args
-        self.vgg = VGG(self.make_layers(cfg[self.args.vgg_type], batch_norm=True), 
-                       num_class=self.args.num_class).to(self.args.device)
+        self.vgg = VGG(self.make_layers(cfg[args.vgg_type], batch_norm=True), 
+                       num_class=args.num_class).to(args.device)
         
-        self.optimizer = torch.optim.Adam(self.vgg.parameters(), self.args.learning_rate)
+        self.optimizer = torch.optim.Adam(self.vgg.parameters(), lr=args.lr)
         self.loss = nn.CrossEntropyLoss()
     
     def make_layers(self, cfg, batch_norm=False):
