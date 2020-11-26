@@ -41,4 +41,4 @@ def augment1(txt_path, save_txt_path):
         fp.writelines(new_lines)
 
 
-augment1("data/weather/train.txt", "data/weather/augment.txt")
+# augment1("data/weather/train.txt", "data/weather/augment.txt")
