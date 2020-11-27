@@ -313,16 +313,18 @@ class BlurImage(object):
 
 
 if __name__ == '__main__':
-    folder = 'data/A/train'
-    folder_to_save = 'data/B/train'
+    folder = 'C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-square/6'
+    folder_to_save = 'C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-blur/6'
     params = [0.01, 0.009, 0.008, 0.007, 0.005, 0.003]
 
-    for path in tqdm.tqdm(os.listdir(folder)):
+    file_list = os.listdir(folder)
+
+    for path in tqdm.tqdm(range(120)):
         trajectory = Trajectory(canvas=64, max_len=60, expl=np.random.choice(params)).fit()
         psf = PSF(canvas=64, trajectory=trajectory).fit()
 
-        blurImg = BlurImage(os.path.join(folder, path),
-                            image_name=path,
+        blurImg = BlurImage(os.path.join(folder, str(path)+'.jpg'),
+                            image_name=str(path) + '.jpg',
                             PSFs=psf,
                             path__to_save=folder_to_save,
                             part=np.random.choice([1, 2, 3]))

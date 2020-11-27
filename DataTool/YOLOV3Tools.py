@@ -732,6 +732,6 @@ def parse_data_config(path):
 
 # print_txt_category("data/custom/test/labels")
 
-# resize_images("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/images", 
-#               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/resized416x416",
+# resize_images("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-resize/6", 
+#               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-square/6",
 #               new_size=416)

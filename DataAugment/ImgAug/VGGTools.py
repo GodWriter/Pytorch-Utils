@@ -1,3 +1,4 @@
+import os
 import tqdm
 import imageio
 
@@ -6,6 +7,17 @@ import imgaug as ia
 
 from imgaug import augmenters as iaa
 from PIL import Image
+
+
+def create_gif(file_path):
+    gif_name = os.path.join(file_path, 'gif.gif')
+
+    frames = []
+    for i in tqdm.tqdm(range(110)):
+        img = Image.open(os.path.join(file_path, str(i) + '.jpg'))
+        frames.append(img)
+
+    imageio.mimsave(gif_name, frames, 'GIF', duration=0.1)
 
 
 def get_chips_augment(txt_path, img_size=640, chip_num=10, save_name="chips", save_txt_path="chips.txt"):
@@ -72,3 +84,4 @@ def augment1(txt_path, save_txt_path):
 
 # augment1("data/weather/train.txt", "data/weather/augment.txt")
 # get_chips_augment(txt_path="data/weather/test.txt", save_name="chips_test", save_txt_path="data/weather/chips_test.txt")
+# create_gif("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-blur/6")
