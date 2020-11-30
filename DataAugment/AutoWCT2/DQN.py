@@ -3,13 +3,23 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torchvision.transforms as transforms
+
+from PIL import Image
+from Data import DataLoader
+from VGG_ENV import VGGRapper, VGG, make_layers
 
 from tensorboardX import SummaryWriter
-from VGG_ENV import VGG, VGGRapper, make_layers
 
 
 env = VGGRapper()
 num_action = env.n_actions
+
+
+cfg = {11 : [16,     'M', 32,       'M', 64,  64,            'M', 128, 128,           'M', 128, 128,           'M'],
+       13 : [64, 64, 'M', 128, 128, 'M', 256, 256,           'M', 512, 512,           'M', 512, 512,           'M'],
+       16 : [64, 64, 'M', 128, 128, 'M', 256, 256, 256,      'M', 512, 512, 512,      'M', 512, 512, 512,      'M'],
+       19 : [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M']}
 
 
 class DQN():
@@ -23,9 +33,9 @@ class DQN():
                             num_class=num_action).to(args.device).train()
         
         self.loss_func = nn.MSELoss()
-        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), self.args.lr)
+        self.optimizer = torch.optim.Adam(self.eval_net.parameters(), args.lr)
 
-        self.writer = SummaryWriter(self.args.logs)
+        self.writer = SummaryWriter(args.logs)
 
     def choose_action(self, state):
         value = self.eval_net(state)
@@ -35,7 +45,7 @@ class DQN():
 
         if np.random.rand(1) >= 0.9:
             action = np.random.choice(range(num_action), 1).item()
-        
+
         return action
 
     def learn(self, state, action, reward, next_state):
@@ -43,7 +53,18 @@ class DQN():
 
 
 def train(args):
-    agent = DQN()
+    agent = DQN(args)
+    writer = SummaryWriter(args.logs)
+
+    transform = transforms.Compose([transforms.Resize((args.img_size, args.img_size), Image.BICUBIC),
+                                    transforms.ToTensor()])
+
+    train_set = DataLoader(args.train_path, args.stride, transform)
+    train_loader = torch.utils.data.DataLoader(train_set,
+                                               batch_size=args.batch_size,
+                                               shuffle=True,
+                                               num_workers=args.n_cpu,
+                                               pin_memory=False)
 
     for n_ep in range(args.n_episodes):
         for batch_i, images in enumerate(train_loader):
@@ -58,5 +79,24 @@ def train(args):
 
                 agent.learn(state, action, reward, next_state)
                 state = next_state
-    
+
     print("Training is Done!!!")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--batch_size', type=int, default=8)
+    parser.add_argument('--n_episodes', type=int, default=100)
+    parser.add_argument("--img_size", type=int, default=320, help="size of each image dimension")
+    parser.add_argument("--vgg_type", type=int, default=13, help="you can choose from 11, 13, 16, 19")
+    parser.add_argument("--stride", type=int, default=32, help="size of stride")
+    parser.add_argument('--gamma', type=float, default=0.995)
+    parser.add_argument('--lr', type=float, default=1e-6)
+    parser.add_argument("--n_cpu", type=int, default=2, help="dataloader threads number")
+    parser.add_argument('--logs', type=str, default='logs/20201130')
+    parser.add_argument('--train_path', type=str, default='data/train.txt')
+    parser.add_argument("--device", type=str, default="cuda:0")
+    args = parser.parse_args()
+    print(args)
+
+    train(args)

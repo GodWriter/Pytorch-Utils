@@ -48,16 +48,15 @@ class VGG(nn.Module):
 
 
 class VGGRapper(object):
-    def __init__(self, args):
+    def __init__(self):
         super().__init__()
-        self.args = args
 
         self.action_space = [0.1, 0.2, 0.3, 0.4, 0.5]
         self.n_actions = len(self.action_space)
 
         self.vgg = VGG(make_layers(cfg[13], batch_norm=True), 
-                       num_class=4).to(args.device).eval()
+                       num_class=4).to('cuda:0').eval()
 
-    def step(self, images, labels):
+    def step(self, state, action):
         # 通过action合成图像，并经过图像分类网络给予reward
         pass

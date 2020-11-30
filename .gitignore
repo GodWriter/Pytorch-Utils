@@ -9,8 +9,11 @@ DataAugment/Defog/data
 DataAugment/Defog/__pycache__
 
 DataAugment/DeBlur/data
-
 DataAugment/ImgAug/data
+
+DataAugment/AutoWCT2/data
+DataAugment/AutoWCT2/logs
+DataAugment/AutoWCT2/__pycache__
 
 DataTool/config
 DataTool/data

@@ -735,3 +735,6 @@ def parse_data_config(path):
 # resize_images("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-resize/6", 
 #               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-square/6",
 #               new_size=416)
+
+# create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pytorch-Utils.git/DataAugment/AutoWCT2/data/sunny", 
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pytorch-Utils.git/DataAugment/AutoWCT2/data/train.txt")
