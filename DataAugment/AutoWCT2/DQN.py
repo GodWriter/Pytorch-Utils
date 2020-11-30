@@ -41,10 +41,18 @@ class DQN():
         value = self.eval_net(state)
 
         _, idx = torch.max(value, 1)
-        action = idx.item()
+        shape = idx.size(0) # 由于数据总量不可能总是整除batch_size，故需要每次得到当前的batch_size
 
-        if np.random.rand(1) >= 0.9:
-            action = np.random.choice(range(num_action), 1).item()
+        action = np.zeros(shape)
+        for i in range(shape):
+            action[i] = idx[i].item()
+
+        if np.random.rand(1) >= 0.1:
+            for i in range(shape):
+                action[i] = np.random.choice(range(num_action), 1)
+        
+        action = torch.LongTensor([t for t in action]).view(-1, 1).long()
+        action = action.to(args.device)
 
         return action
 
