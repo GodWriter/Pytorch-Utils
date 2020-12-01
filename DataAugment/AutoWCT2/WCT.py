@@ -261,10 +261,10 @@ class WaveDecoder(nn.Module):
 
 
 def wct_core(cont_feat, sty_feat, weight=0.2):
-    print("cont_feat: ", cont_feat.size())
-    print("sty_feat: ", sty_feat.size())
-    print("weight: ", weight.size())
-    print("weight: ", weight)
+    # print("cont_feat: ", cont_feat.size())
+    # print("sty_feat: ", sty_feat.size())
+    # print("weight: ", weight.size())
+    # print("weight: ", weight)
 
     targetFeature = (1.0 - weight) * cont_feat + weight * sty_feat
     return targetFeature

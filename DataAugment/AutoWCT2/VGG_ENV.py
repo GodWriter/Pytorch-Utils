@@ -76,13 +76,14 @@ class VGGRapper(object):
         self.vgg.load_state_dict(torch.load("checkpoints/vgg_done.pth"))
 
     def step(self, state, value):
-        # 生成图像
-        with torch.no_grad():
+        value = value.unsqueeze(2).unsqueeze(3) # 调整维度以进行后面的运算
+
+        with torch.no_grad(): # 生成图像
             img_aug = self.wct2.transfer(state,
                                          self.style,
                                          alpha=1,
-                                         weight=value)
-            outputs = self.vgg(img_aug)
+                                         weight=value) # [bs, 3, 32, 32]
+            outputs = self.vgg(img_aug) # [bs, 4]
 
             return outputs[:, 2] # 第二维度代表雾天的打分
             

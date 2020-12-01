@@ -32,8 +32,8 @@ class DQN():
         self.eval_net = VGG(make_layers(cfg[args.vgg_type], batch_norm=True),
                             num_class=num_action).to(args.device).train()
         
-        # 用于通过动作选择相关的权值
-        self.actions = torch.from_numpy(np.asarray([env.action_space for _ in range(args.batch_size)])).to(args.device)
+        # 用于通过动作选择相关的权值, 一定要加入np.float32，否则会报错expected device cuda:0 等问题
+        self.actions = torch.from_numpy(np.asarray([env.action_space for _ in range(args.batch_size)], dtype=np.float32)).to(args.device)
         
         self.loss_func = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), args.lr)
