@@ -32,6 +32,9 @@ class DQN():
         self.eval_net = VGG(make_layers(cfg[args.vgg_type], batch_norm=True),
                             num_class=num_action).to(args.device).train()
         
+        # 用于通过动作选择相关的权值
+        self.actions = torch.from_numpy(np.asarray([env.action_space for _ in range(args.batch_size)])).to(args.device)
+        
         self.loss_func = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), args.lr)
 
@@ -54,7 +57,8 @@ class DQN():
         action = torch.LongTensor([t for t in action]).view(-1, 1).long()
         action = action.to(args.device)
 
-        return action
+        value = self.actions.gather(1, action)
+        return action, value
 
     def learn(self, state, action, reward, next_state):
         pass
@@ -82,8 +86,8 @@ def train(args):
             for idx in range(args.stride, args.img_size, args.stride):
                 next_state = images[:, :, :, idx: idx + args.stride]
 
-                action = agent.choose_action(state)
-                reward = env.step(state, action)
+                action, value = agent.choose_action(state)
+                reward = env.step(state, value)
 
                 agent.learn(state, action, reward, next_state)
                 state = next_state

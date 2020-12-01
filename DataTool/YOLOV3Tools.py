@@ -738,3 +738,6 @@ def parse_data_config(path):
 
 # create_dataset_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pytorch-Utils.git/DataAugment/AutoWCT2/data/sunny", 
 #                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pytorch-Utils.git/DataAugment/AutoWCT2/data/train.txt")
+
+# txt2xml(class_names, "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/images",
+#         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels", "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels")

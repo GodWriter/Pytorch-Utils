@@ -13,6 +13,7 @@ DataAugment/ImgAug/data
 
 DataAugment/AutoWCT2/data
 DataAugment/AutoWCT2/logs
+DataAugment/AutoWCT2/checkpoints
 DataAugment/AutoWCT2/__pycache__
 
 DataTool/config
