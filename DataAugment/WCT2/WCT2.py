@@ -337,8 +337,8 @@ def wct_core_mask(cont_feat, sty_feat, cont_mask, styl_mask, weight=0.3, device=
     pass
 
 
-def wct_core(cont_feat, sty_feat, weight=0.3, registers=None, device='cpu'):
-    targetFeature = 0.7 * cont_feat + weight * sty_feat
+def wct_core(cont_feat, sty_feat, weight=0.2, registers=None, device='cpu'):
+    targetFeature = 0.9 * cont_feat + weight * sty_feat
     return targetFeature
 
 
