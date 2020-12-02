@@ -29,6 +29,7 @@ class DQN():
         
         # 用于通过动作选择相关的权值, 一定要加入np.float32，否则会报错expected device cuda:0 等问题
         self.actions = torch.from_numpy(np.asarray([env.action_space for _ in range(args.batch_size)], dtype=np.float32)).to(args.device)
+        self.actions_test = torch.from_numpy(np.asarray([env.action_space for _ in range(1)], dtype=np.float32)).to(args.device)
         
         self.loss_func = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), args.lr)
@@ -52,8 +53,24 @@ class DQN():
         
         action = torch.LongTensor([t for t in action]).view(-1, 1).long()
         action = action.to(self.args.device)
-
+        
         value = self.actions.gather(1, action)
+        return action, value
+
+    def choose_action_test(self, state):
+        value = self.eval_net(state)
+
+        _, idx = torch.max(value, 1)
+        shape = idx.size(0) # 由于数据总量不可能总是整除batch_size，故需要每次得到当前的batch_size
+
+        action = np.zeros(shape)
+        for i in range(shape):
+            action[i] = idx[i].item()
+
+        action = torch.LongTensor([t for t in action]).view(-1, 1).long()
+        action = action.to(self.args.device)
+        
+        value = self.actions_test.gather(1, action)
         return action, value
 
     def learn(self, state, action, reward, next_state):

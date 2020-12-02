@@ -1,9 +1,11 @@
+import tqdm
 import argparse
 import numpy as np
 
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+from torchvision.utils import save_image
 
 from PIL import Image
 from DQN import DQN
@@ -69,23 +71,29 @@ def test(args):
         lines = fp.readlines()
 
     agent = DQN(args)
-    agent.eval_net.load_state_dict('checkpoints/autowct_34000.pth')
+    agent.eval_net.load_state_dict(torch.load('checkpoints/autowct_34000.pth'))
 
     with torch.no_grad():
         for line in tqdm.tqdm(lines):
-            img = transform(Image.open(line).convert('RGB')).unsqueeze(0).to(args.device)
+            img_path = line.rstrip()
+            img = transform(Image.open(img_path).convert('RGB')).unsqueeze(0).to(args.device)
 
             for row in range(0, IMG_SIZE, STRIDE):
                 for col in range(0, IMG_SIZE, STRIDE):
                     img_block = img[:, :, row: row+STRIDE, col: col+STRIDE]
-                    action, value = agent.choose_action(img_block)
+                    action, value = agent.choose_action_test(img_block)
 
                     img_aug = env.wct_transfer(img_block, value)
                     img[:, :, row: row+STRIDE, col: col+STRIDE] = img_aug
             
-            img = img.to('cpu').squeeze(0).numpy()
-            img = Image.fromarray(img)
-            img.save(line)
+            save_image(img.clamp_(0, 1), img_path, padding=0)
+            # img = img.squeeze(0).permute(1, 2, 0)
+            # img = img.to('cpu').numpy()
+            # img = np.uint8(img)
+            # print(img)
+
+            # img = Image.fromarray(img)
+            # img.save(img_path)
 
 
 if __name__ == "__main__":
@@ -100,8 +108,10 @@ if __name__ == "__main__":
     parser.add_argument("--n_cpu", type=int, default=4, help="dataloader threads number")
     parser.add_argument('--logs', type=str, default='logs/20201202')
     parser.add_argument('--train_path', type=str, default='data/train.txt')
+    parser.add_argument('--test_path', type=str, default='data/test.txt')
     parser.add_argument("--device", type=str, default="cuda:0")
     args = parser.parse_args()
     print(args)
 
-    train(args)
+    # train(args)
+    test(args)
