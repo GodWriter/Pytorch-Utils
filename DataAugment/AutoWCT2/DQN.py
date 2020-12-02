@@ -76,7 +76,7 @@ class DQN():
         self.writer.add_scalar('loss/value_loss', loss, self.update_count)
         self.update_count += 1
 
-        if self.update_count % 100 == 0:
+        if self.update_count % 10 == 0:
             self.target_net.load_state_dict(self.eval_net.state_dict())
 
 
@@ -98,6 +98,7 @@ def train(args):
     for n_ep in range(args.n_episodes):  
         for batch_i, images in enumerate(train_loader):
             images = images.to(args.device)
+            ep_reward = 0.0
 
             state = images[:, :, :, 0: args.stride]
             for idx in range(args.stride, args.img_size, args.stride):
@@ -105,11 +106,16 @@ def train(args):
 
                 action, value = agent.choose_action(state)
                 reward = env.step(state, value)
+                ep_reward += reward
 
                 agent.learn(state, action, reward, next_state)
                 state = next_state
             
-            print("n_ep:{}, batch_i:{}".format(n_ep, batch_i))
+            ep_reward = ep_reward.mean()
+            print("n_ep:{}, batch_i:{}, ep_reward:{}".format(n_ep, batch_i, ep_reward))
+
+            if batch_i % 2 == 0:
+                agent.writer.add_scalar('live/ep_reward', ep_reward, global_step=n_ep*len(train_loader) + batch_i*args.batch_size)
 
     print("Training is Done!!!")
 
