@@ -38,6 +38,7 @@ class DQN():
         self.loss_func = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.eval_net.parameters(), args.lr)
 
+        self.update_count = 0
         self.writer = SummaryWriter(args.logs)
 
     def choose_action(self, state):
@@ -61,7 +62,22 @@ class DQN():
         return action, value
 
     def learn(self, state, action, reward, next_state):
-        pass
+        with torch.no_grad():
+            target_v = reward + self.args.gamma * self.target_net(next_state).max(1)[0]
+            target_v = target_v.unsqueeze(1)
+
+        eval_v = (self.eval_net(state).gather(1, action))
+        loss = self.loss_func(target_v, eval_v)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        self.writer.add_scalar('loss/value_loss', loss, self.update_count)
+        self.update_count += 1
+
+        if self.update_count % 100 == 0:
+            self.target_net.load_state_dict(self.eval_net.state_dict())
 
 
 def train(args):
@@ -76,9 +92,10 @@ def train(args):
                                                batch_size=args.batch_size,
                                                shuffle=True,
                                                num_workers=args.n_cpu,
-                                               pin_memory=False)
+                                               pin_memory=False,
+                                               drop_last=True)
 
-    for n_ep in range(args.n_episodes):
+    for n_ep in range(args.n_episodes):  
         for batch_i, images in enumerate(train_loader):
             images = images.to(args.device)
 
@@ -91,6 +108,8 @@ def train(args):
 
                 agent.learn(state, action, reward, next_state)
                 state = next_state
+            
+            print("n_ep:{}, batch_i:{}".format(n_ep, batch_i))
 
     print("Training is Done!!!")
 
