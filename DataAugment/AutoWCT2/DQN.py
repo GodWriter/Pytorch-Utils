@@ -76,8 +76,11 @@ class DQN():
         self.writer.add_scalar('loss/value_loss', loss, self.update_count)
         self.update_count += 1
 
-        if self.update_count % 10 == 0:
+        if self.update_count % 100 == 0:
             self.target_net.load_state_dict(self.eval_net.state_dict())
+        
+        if self.update_count % 2000 == 0:
+            torch.save(self.eval_net.state_dict(), "checkpoints/autowct_{}.pth".format(self.update_count))
 
 
 def train(args):
@@ -112,10 +115,11 @@ def train(args):
                 state = next_state
             
             ep_reward = ep_reward.mean()
-            print("n_ep:{}, batch_i:{}, ep_reward:{}".format(n_ep, batch_i, ep_reward))
+            print("n_ep:{}, batch_i:{}, update_count:{}, ep_reward:{}".format(n_ep, batch_i, agent.update_count, ep_reward))
 
             if batch_i % 2 == 0:
-                agent.writer.add_scalar('live/ep_reward', ep_reward, global_step=n_ep*len(train_loader) + batch_i*args.batch_size)
+                n_step = n_ep*len(train_set) + batch_i*args.batch_size
+                agent.writer.add_scalar('live/ep_reward', ep_reward, global_step=n_step)
 
     print("Training is Done!!!")
 
@@ -129,8 +133,8 @@ if __name__ == "__main__":
     parser.add_argument("--stride", type=int, default=32, help="size of stride")
     parser.add_argument('--gamma', type=float, default=0.995)
     parser.add_argument('--lr', type=float, default=1e-6)
-    parser.add_argument("--n_cpu", type=int, default=2, help="dataloader threads number")
-    parser.add_argument('--logs', type=str, default='logs/20201130')
+    parser.add_argument("--n_cpu", type=int, default=4, help="dataloader threads number")
+    parser.add_argument('--logs', type=str, default='logs/20201202')
     parser.add_argument('--train_path', type=str, default='data/train.txt')
     parser.add_argument("--device", type=str, default="cuda:0")
     args = parser.parse_args()
