@@ -57,6 +57,37 @@ def train(args):
     print("Training is Done!!!")
 
 
+def test(args):
+    IMG_SIZE = 320
+    CHIP_NUM = 10
+    STRIDE = IMG_SIZE // CHIP_NUM
+
+    transform = transforms.Compose([transforms.Resize((IMG_SIZE, IMG_SIZE), Image.BICUBIC),
+                                    transforms.ToTensor()])
+
+    with open(args.test_path, 'r') as fp:
+        lines = fp.readlines()
+
+    agent = DQN(args)
+    agent.eval_net.load_state_dict('checkpoints/autowct_34000.pth')
+
+    with torch.no_grad():
+        for line in tqdm.tqdm(lines):
+            img = transform(Image.open(line).convert('RGB')).unsqueeze(0).to(args.device)
+
+            for row in range(0, IMG_SIZE, STRIDE):
+                for col in range(0, IMG_SIZE, STRIDE):
+                    img_block = img[:, :, row: row+STRIDE, col: col+STRIDE]
+                    action, value = agent.choose_action(img_block)
+
+                    img_aug = env.wct_transfer(img_block, value)
+                    img[:, :, row: row+STRIDE, col: col+STRIDE] = img_aug
+            
+            img = img.to('cpu').squeeze(0).numpy()
+            img = Image.fromarray(img)
+            img.save(line)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=8)
@@ -65,7 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("--vgg_type", type=int, default=13, help="you can choose from 11, 13, 16, 19")
     parser.add_argument("--stride", type=int, default=32, help="size of stride")
     parser.add_argument('--gamma', type=float, default=0.995)
-    parser.add_argument('--lr', type=float, default=1e-6)
+    parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument("--n_cpu", type=int, default=4, help="dataloader threads number")
     parser.add_argument('--logs', type=str, default='logs/20201202')
     parser.add_argument('--train_path', type=str, default='data/train.txt')

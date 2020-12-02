@@ -86,5 +86,15 @@ class VGGRapper(object):
             outputs = self.vgg(img_aug) # [bs, 4]
 
             return outputs[:, 2] # 第二维度代表雾天的打分
-            
+    
+    def wct_transfer(self, state, value):
+        value = value.unsqueeze(2).unsqueeze(3) # 调整维度以进行后面的运算
+
+        with torch.no_grad(): # 生成图像
+            img_aug = self.wct2.transfer(state,
+                                         self.style,
+                                         alpha=1,
+                                         weight=value) # [bs, 3, 32, 32]
+
+            return img_aug # 第二维度代表雾天的打分    
             
