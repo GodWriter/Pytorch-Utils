@@ -65,7 +65,7 @@ class ResidualBlock(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, in_channels=3, dim=64, n_upsample=2):
+    def __init__(self, out_channels=3, dim=64, n_upsample=2):
         super(Decoder, self).__init__()
 
         # Upsampling
@@ -88,16 +88,16 @@ class Decoder(nn.Module):
         return out
 
 
-class G_A(nn.Module):
-    def __init__(self, out_channels=3, dim=64, shared_E=None, shared_D=None):
-        super(G_A, self).__init__()
+class GeneratorA(nn.Module):
+    def __init__(self, num_residual=9, dim=64, shared_E=None, shared_D=None):
+        super(GeneratorA, self).__init__()
 
         layers = []
         self.shared_E = shared_E
         self.shared_D = shared_D
 
         # residual blocks
-        for _ in range(9):
+        for _ in range(num_residual):
             layers += [ResidualBlock(dim)]
 
         self.model_blocks = nn.Sequential(*layers)
@@ -110,9 +110,9 @@ class G_A(nn.Module):
         return x
 
 
-class G_B(nn.Module):
-    def __init__(self, out_channels=3, dim=64, shared_E=None, shared_D=None):
-        super(G_B, self).__init__()
+class GeneratorB(nn.Module):
+    def __init__(self, num_residual=9, dim=64, shared_E=None, shared_D=None):
+        super(GeneratorB, self).__init__()
 
         layers = []
         self.shared_E = shared_E

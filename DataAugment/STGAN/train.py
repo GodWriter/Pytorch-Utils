@@ -8,60 +8,55 @@ from torch.autograd import Variable
 
 from config import parse_args
 from utils import save_sample
-from model import Generator, Discriminator, Encoder, ResidualBlock, weights_init_normal
+from model import Encoder, Decoder, GeneratorA, GeneratorB, Discriminator, weights_init_normal
 from dataloader import coco_loader
 
 
 def train():
     opt = parse_args()
-
     cuda = True if torch.cuda.is_available() else False
+
+    input_shape = (opt.channels, opt.img_width, opt.img_height)
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
     # get dataloader
     train_loader = coco_loader(opt, mode='train')
     test_loader = coco_loader(opt, mode='test')
 
+    # Initialize two generators and the discriminator
+    shared_E = Encoder(opt.channels, opt.dim, opt.n_downsample)
+    shared_D = Decoder(3, 256, opt.n_upsample)
+
+    G_A = GeneratorA(opt.n_residual, 256, shared_E, shared_D)
+    G_B = GeneratorB(opt.n_residual, 256, shared_E, shared_D)
+
+    D_B = Discriminator(input_shape)
+
+    # Initialize weights
+    shared_E.apply(weights_init_normal)
+    shared_D.apply(weights_init_normal)
+    G_A.apply(weights_init_normal)
+    G_B.apply(weights_init_normal)
+    D_B.apply(weights_init_normal)
+
+    if cuda:
+        shared_E = shared_E.cuda()
+        shared_D = shared_D.cuda()
+        G_A = G_A.cuda()
+        G_B = G_B.cuda()
+        D_B = D_B.cuda()
+
     for batch_i, img in enumerate(train_loader):
-        print("img.size: ", img.size())
+        img = Variable(img.type(FloatTensor))
 
-    # Dimensionality
-    input_shape = (opt.channels, opt.img_height, opt.img_width)
-    # shared_dim = opt.dim * (2 ** opt.n_downsample)
+        stylized_img = G_A(img)
+        reconstructed_img = G_B(stylized_img)
 
-    # # Initialize generator and discriminator
-    # shared_E = ResidualBlock(in_channels=shared_dim)
-    # E1 = Encoder(dim=opt.dim, n_downsample=opt.n_downsample, shared_block=shared_E)
-    # E2 = Encoder(dim=opt.dim, n_downsample=opt.n_downsample, shared_block=shared_E)
 
-    # shared_G = ResidualBlock(in_channels=shared_dim)
-    # G1 = Generator(dim=opt.dim, n_upsample=opt.n_upsample, shared_block=shared_G)
-    # G2 = Generator(dim=opt.dim, n_upsample=opt.n_upsample, shared_block=shared_G)
-
-    # D1 = Discriminator(input_shape)
-    # D2 = Discriminator(input_shape)
-
-    # # Initialize weights
-    # E1.apply(weights_init_normal)
-    # E2.apply(weights_init_normal)
-    # G1.apply(weights_init_normal)
-    # G2.apply(weights_init_normal)
-    # D1.apply(weights_init_normal)
-    # D2.apply(weights_init_normal)
 
     # # Loss function
     # adversarial_loss = torch.nn.MSELoss()
     # pixel_loss = torch.nn.L1Loss()
-
-    # if cuda:
-    #     E1 = E1.cuda()
-    #     E2 = E2.cuda()
-    #     G1 = G1.cuda()
-    #     G2 = G2.cuda()
-    #     D1 = D1.cuda()
-    #     D2 = D2.cuda()
-    #     adversarial_loss = adversarial_loss.cuda()
-    #     pixel_loss = pixel_loss.cuda()
 
     # # Optimizers
     # optimizer_G = torch.optim.Adam(itertools.chain(E1.parameters(), E2.parameters(), G1.parameters(), G2.parameters()),

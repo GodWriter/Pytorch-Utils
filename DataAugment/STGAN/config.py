@@ -25,6 +25,7 @@ def parse_args():
     parser.add_argument('--lambda_cyc', type=float, default=100, help='cycle loss weight')
     parser.add_argument('--n_downsample', type=int, default=2, help='number downsampling layers in encoder')
     parser.add_argument('--n_upsample', type=int, default=2, help='number sampling layers in decoder')
+    parser.add_argument('--n_residual', type=int, default=9, help='number residual block')
     parser.add_argument('--dim', type=int, default=64, help='number of filters in first encoder layer')
     parser.add_argument('--sample_interval', type=int, default=100, help='interval between image samples')
     parser.add_argument('--checkpoint_interval', type=int, default=5000, help='interval between saving models')
