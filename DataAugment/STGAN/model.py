@@ -5,12 +5,6 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 
-def compute_KL(mu):
-    mu_2 = torch.pow(mu, 2)
-    loss = torch.mean(mu_2)
-    return loss
-
-
 def weights_init_normal(m):
     classname = m.__class__.__name__
     if classname.find("Conv") != -1:
@@ -31,6 +25,29 @@ class LambdaLR:
         return 1.0 - max(0, epoch + self.offset - self.decay_start_epoch) / (self.n_epochs - self.decay_start_epoch)
 
 
+class Encoder(nn.Module):
+    def __init__(self, in_channels=3, dim=64, n_downsample=2):
+        super(Encoder, self).__init__()
+
+        layers = [nn.ReflectionPad2d(3),
+                  nn.Conv2d(in_channels, dim, 7),
+                  nn.InstanceNorm2d(64),
+                  nn.LeakyReLU(0.2, inplace=True)]
+
+        # Downsampling
+        for _ in range(n_downsample):
+            layers += [nn.Conv2d(dim, dim*2, 4, stride=2, padding=1),
+                       nn.InstanceNorm2d(dim * 2),
+                       nn.ReLU(inplace=True)]
+            dim *= 2
+
+        self.model_blocks = nn.Sequential(*layers)
+
+    def forward(self, x):
+        out = self.model_blocks(x)
+        return out
+
+
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels):
         super(ResidualBlock, self).__init__()
@@ -47,55 +64,12 @@ class ResidualBlock(nn.Module):
         return x + self.block(x)
 
 
-class Encoder(nn.Module):
-    def __init__(self, in_channels=3, dim=64, n_downsample=2, shared_block=None):
-        super(Encoder, self).__init__()
-
-        # Initial convolution block
-        layers = [nn.ReflectionPad2d(3),
-                  nn.Conv2d(in_channels, dim, 7),
-                  nn.InstanceNorm2d(64),
-                  nn.LeakyReLU(0.2, inplace=True)]
-
-        # Downsampling
-        for _ in range(n_downsample):
-            layers += [nn.Conv2d(dim, dim*2, 4, stride=2, padding=1),
-                       nn.InstanceNorm2d(dim * 2),
-                       nn.ReLU(inplace=True)]
-            dim *= 2
-
-        # Residual blocks
-        for _ in range(3):
-            layers += [ResidualBlock(dim)]
-
-        self.model_blocks = nn.Sequential(*layers)
-        self.shared_block = shared_block
-
-    def reparameterization(self, mu):
-        FloatTensor = torch.cuda.FloatTensor if mu.is_cuda else torch.FloatTensor
-        z = Variable(FloatTensor(np.random.normal(0, 1, mu.shape)))
-        return z + mu
-
-    def forward(self, x):
-        x = self.model_blocks(x)
-        mu = self.shared_block(x)
-        z = self.reparameterization(mu)
-        return mu, z
-
-
-class Generator(nn.Module):
-    def __init__(self, out_channels=3, dim=64, n_upsample=2, shared_block=None):
-        super(Generator, self).__init__()
-
-        layers = []
-        dim = dim * 2 ** n_upsample
-        self.shared_block = shared_block
-
-        # residual blocks
-        for _ in range(3):
-            layers += [ResidualBlock(dim)]
+class Decoder(nn.Module):
+    def __init__(self, in_channels=3, dim=64, n_upsample=2):
+        super(Decoder, self).__init__()
 
         # Upsampling
+        layers = []
         for _ in range(n_upsample):
             layers += [nn.ConvTranspose2d(dim, dim//2, 4, stride=2, padding=1),
                        nn.InstanceNorm2d(dim//2),
@@ -108,11 +82,53 @@ class Generator(nn.Module):
                    nn.Tanh()]
 
         self.model_blocks = nn.Sequential(*layers)
-        self.shared_block = shared_block
 
     def forward(self, x):
-        x = self.shared_block(x)
+        out = self.model_blocks(x)
+        return out
+
+
+class G_A(nn.Module):
+    def __init__(self, out_channels=3, dim=64, shared_E=None, shared_D=None):
+        super(G_A, self).__init__()
+
+        layers = []
+        self.shared_E = shared_E
+        self.shared_D = shared_D
+
+        # residual blocks
+        for _ in range(9):
+            layers += [ResidualBlock(dim)]
+
+        self.model_blocks = nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.shared_E(x)
         x = self.model_blocks(x)
+        x = self.shared_D(x)
+
+        return x
+
+
+class G_B(nn.Module):
+    def __init__(self, out_channels=3, dim=64, shared_E=None, shared_D=None):
+        super(G_B, self).__init__()
+
+        layers = []
+        self.shared_E = shared_E
+        self.shared_D = shared_D
+
+        # residual blocks
+        for _ in range(9):
+            layers += [ResidualBlock(dim)]
+
+        self.model_blocks = nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.shared_E(x)
+        x = self.model_blocks(x)
+        x = self.shared_D(x)
+
         return x
 
 

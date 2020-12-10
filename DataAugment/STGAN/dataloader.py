@@ -8,41 +8,25 @@ from torch.utils.data import Dataset, DataLoader
 
 
 class ImageDataset(Dataset):
-    def __init__(self, root, transforms_=None, unaligned=False, mode='train'):
+    def __init__(self, root, transforms_=None):
         self.transform = transforms_
-        self.unaligned = unaligned
+        self.files = glob.glob(r"%s/*.*"%root)
 
-        self.files_A = sorted(glob.glob(os.path.join(root, "%sA" % mode) + "/*.*"))
-        self.files_B = sorted(glob.glob(os.path.join(root, "%sB" % mode) + "/*.*"))
-
-        self.len_A = len(self.files_A)
-        self.len_B = len(self.files_B)
+        self.length = len(self.files)
 
     def __getitem__(self, index):
-        img_A = Image.open(self.files_A[index % self.len_A])
+        img = Image.open(self.files[index % self.length])
 
-        if self.unaligned:
-            img_B = Image.open(self.files_B[random.randint(0, self.len_B-1)])
-        else:
-            img_B = Image.open(self.files_B[index % self.len_B])
+        if img.mode != "RGB": img = img.convert("RGB")
+        img = self.transform(img)
 
-        # Convert images to rgb
-        if img_A.mode != "RGB":
-            img_A = img_A.convert("RGB")
-        if img_B.mode != "RGB":
-            img_B = img_B.convert("RGB")
-
-        img_A = self.transform(img_A)
-        img_B = self.transform(img_B)
-
-        return img_A, img_B
+        return img
 
     def __len__(self):
-        return min(self.len_A, self.len_B)
+        return self.length
 
 
-def commic2human_loader(opt, mode):
-    data_path = 'data/%s' % opt.dataset
+def coco_loader(opt, mode):
 
     # pre-process the data
     transform = transforms.Compose([transforms.Resize(int(opt.img_height * 1.12), Image.BICUBIC),
@@ -50,10 +34,8 @@ def commic2human_loader(opt, mode):
                                     transforms.RandomHorizontalFlip(),
                                     transforms.ToTensor(),
                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    loader = ImageDataset(data_path,
-                          transforms_=transform,
-                          unaligned=True,
-                          mode=mode)
+    loader = ImageDataset(opt.dataset,
+                          transforms_=transform)
 
     # create the data_loader
     if mode == 'train':
@@ -62,7 +44,7 @@ def commic2human_loader(opt, mode):
                                  shuffle=True)
     elif mode == 'test':
         data_loader = DataLoader(loader,
-                                 batch_size=5,
+                                 batch_size=4,
                                  shuffle=True)
 
     return data_loader
