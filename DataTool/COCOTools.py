@@ -1,8 +1,10 @@
 import os
-import json
-import xml.etree.ElementTree as ET
-import numpy as np
 import cv2
+import json
+import tqdm
+
+import numpy as np
+import xml.etree.ElementTree as ET
 
 
 def _isArrayLike(obj):
@@ -180,3 +182,115 @@ class voc2coco:
                            "annotations": ann_msg,
                            "categories": self.categories_msg}
             self._save_json_file('voc_' + self.year + '_' + img_set, result_json)
+
+
+def get_json_by_catID(json_path, save_path):
+    """
+    Get json file by id of category.
+    1: liner 2: container 3: bulk 4: island 5: sailboat 6: other
+    """
+    fp = open(json_path, 'r', encoding='utf8')
+
+    old_json = json.load(fp)
+    new_json = {"images": [], 
+                "type": old_json['type'], 
+                "annotations": old_json['annotations'], 
+                "categories": old_json['categories']}
+    
+    for ann in new_json["annotations"]:
+        if ann['category_id'] == 2:
+            new_json["images"].append(old_json["images"][ann['image_id']-1])
+    
+    with open(save_path, 'a', encoding='utf8')as fp:
+        json.dump(new_json, fp, ensure_ascii=False)
+
+    fp.close()
+
+
+def compound_2_dataset(A_path, B_path, save_path):
+    """
+    Compose two json files into 1.
+    """
+    fp_A = open(A_path, 'r', encoding='utf8')
+    fp_B = open(B_path, 'r', encoding='utf8')
+
+    json_A = json.load(fp_A)
+    json_B = json.load(fp_B)
+
+    imgs = json_A["images"] + json_B["images"]
+    anns = json_A["annotations"] + json_B["annotations"]
+
+    new_json = {"images": imgs, 
+                "type": json_A['type'], 
+                "annotations": anns, 
+                "categories": json_A['categories']}
+
+    with open(save_path, 'a', encoding='utf8')as fp:
+        json.dump(new_json, fp, ensure_ascii=False)
+
+    fp_A.close()
+    fp_B.close()
+
+
+def rename_json_filename(json_path, save_path):
+    fp = open(json_path, 'r', encoding='utf8')
+
+    old_json = json.load(fp)
+    new_json = {"images": [], 
+                "type": old_json['type'], 
+                "annotations": [], 
+                "categories": old_json['categories']}
+    
+    for img in tqdm.tqdm(old_json["images"]):
+        img['file_name'] = '1' + img['file_name']
+        img['id'] += 2000
+        new_json['images'].append(img)
+    
+    for ann in tqdm.tqdm(old_json["annotations"]):
+        ann['image_id'] += 2000
+        ann['id'] += 3000
+        new_json['annotations'].append(ann)
+    
+    with open(save_path, 'a', encoding='utf8')as fp:
+        json.dump(new_json, fp, ensure_ascii=False)
+
+    fp.close()
+
+
+def modify_json_value_type(json_path):
+    fp = open(json_path, 'r', encoding='utf8')
+    json_file = json.load(fp)
+
+    for img in tqdm.tqdm(json_file["images"]):
+        print(type(img['id']))
+    
+    for ann in tqdm.tqdm(json_file["annotations"]):
+        print(ann(img['image_id']))
+
+
+def rename_file(file_path):
+    file_list = os.listdir(file_path)
+
+    for name in tqdm.tqdm(file_list):
+        old_path = os.path.join(file_path, name)
+        new_path = os.path.join(file_path, '1' + name)
+
+        os.rename(old_path, new_path)
+
+
+# get_json_by_catID('config/coco/train.json', 'config/coco/container.json')
+# rename_json_filename("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/b_test.json",
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/c_test.json")
+
+# compound_2_dataset("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/a_test.json",
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/c_test.json",
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/d_test.json")
+
+# rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/pic")
+
+# modify_json_value_type("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/b_test/a_test.json")
+
+# compound_2_dataset("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/sun_aug/train.json",
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/sun_aug/aug.json",
+#                    "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/shipContest/data/sun_aug/train_aug.json")
+
