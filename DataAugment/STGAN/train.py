@@ -4,12 +4,14 @@ import torch
 import itertools
 import datetime
 
+import numpy as np
 from torch.autograd import Variable
 
 from config import parse_args
 from utils import save_sample
-from model import Encoder, Decoder, GeneratorA, GeneratorB, Discriminator, weights_init_normal
 from dataloader import coco_loader
+from model import Encoder, Decoder, GeneratorA, GeneratorB, Discriminator, weights_init_normal, LambdaLR
+
 
 
 def train():
@@ -33,25 +35,30 @@ def train():
     D_B = Discriminator(input_shape)
 
     # Initialize weights
-    shared_E.apply(weights_init_normal)
-    shared_D.apply(weights_init_normal)
     G_A.apply(weights_init_normal)
     G_B.apply(weights_init_normal)
     D_B.apply(weights_init_normal)
 
     if cuda:
-        shared_E = shared_E.cuda()
-        shared_D = shared_D.cuda()
         G_A = G_A.cuda()
         G_B = G_B.cuda()
         D_B = D_B.cuda()
+    
+    optimizer_G = torch.optim.Adam(itertools.chain(G_A.parameters(), G_B.parameters()), lr=opt.lr, betas=(0.5, 0.999))
+    optimizer_D = torch.optim.Adam(D_B.parameters, lr=opt.lr, betas=(0.5, 0.999))
 
-    for batch_i, img in enumerate(train_loader):
-        img = Variable(img.type(FloatTensor))
+    lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
+    lr_scheduler_D = torch.optim.lr_scheduler.LambdaLR(optimizer_D, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
 
-        stylized_img = G_A(img)
-        reconstructed_img = G_B(stylized_img)
+    prev_time = time.time()
+    for epoch in range(opt.epoch, opt.n_epochs):
+        for batch_i, img in enumerate(train_loader):
+            img = Variable(img.type(FloatTensor))
 
+            stylized_img = G_A(img)
+            reconstructed_img = G_B(stylized_img)
+
+            valid = Variable(FloatTensor(np.ones()))
 
 
     # # Loss function

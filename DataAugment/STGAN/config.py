@@ -9,7 +9,8 @@ def parse_args():
     desc = "Pytorch implementation of Unit"
     parser = argparse.ArgumentParser(description=desc)
 
-    parser.add_argument('--epochs', type=int, default=100, help="training epochs")
+    parser.add_argument('--epoch', type=int, default=0, help="start epochs")
+    parser.add_argument('--n_epochs', type=int, default=200, help="training epochs")
     parser.add_argument('--batch_size', type=int, default=4, help='batch size')
     parser.add_argument('--dataset', type=str, default='data/coco2014', help='path of dataset')
     parser.add_argument('--lr', type=float, default=0.0001, help='adam: learning rate')
