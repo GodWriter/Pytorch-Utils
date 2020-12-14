@@ -93,19 +93,15 @@ def resize_img(path):
         img.save(img_path)
 
 
-def save_sample(dataset, test_loader, batches_done, E1, E2, G1, G2, FloatTensor):
-    X1, X2 = next(iter(test_loader))
+def save_sample(style_name, test_loader, batches_done, G_A, G_B, FloatTensorr):
+    img = next(iter(test_loader))
+    img = Variable(img.type(FloatTensor))
 
-    X1 = Variable(X1.type(FloatTensor))
-    X2 = Variable(X2.type(FloatTensor))
+    stylized_img = G_A(img)
+    reconstructed_img = G_B(reconstructed_img)
 
-    _, Z1 = E1(X1)
-    _, Z2 = E2(X2)
-    fake_X1 = G1(Z2)
-    fake_X2 = G2(Z1)
-
-    samples = torch.cat((X1.data, fake_X2.data, X2.data, fake_X1.data), 0)
-    save_image(samples, "images/%s/%d.png" % (dataset, batches_done), nrow=5, normalize=True)
+    samples = torch.cat((stylized_img.data, reconstructed_img.data), 0)
+    save_image(samples, "images/%s/%d.png" % (dataset, batches_done), nrow=4, normalize=True)
 
 
 if __name__ == "__main__":

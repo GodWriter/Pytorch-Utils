@@ -14,6 +14,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=4, help='batch size')
     parser.add_argument('--dataset', type=str, default='data/coco2014', help='path of dataset')
     parser.add_argument('--style_img', type=str, default='images/style.jpg', help='path of style image')
+    parser.add_argument('--style_name', type=str, default='style', help='path to save checkpoints')
     parser.add_argument('--lr', type=float, default=0.0001, help='adam: learning rate')
     parser.add_argument('--decay_epoch', type=int, default=50, help='epoch from which to start lr decay')
     parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads during batch generation')
