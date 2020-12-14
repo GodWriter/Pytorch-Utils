@@ -97,7 +97,7 @@ def train():
             loss_adv = opt.lambda_adv * criterion_GAN(D_B(reconstructed_img), valid)
 
             loss_G = loss_st + loss_adv
-            loss_G.backward()
+            loss_G.backward(retain_graph=True)
             optimizer_G.step()
 
             # ----------------------
