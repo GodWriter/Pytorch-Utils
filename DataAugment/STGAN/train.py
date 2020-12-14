@@ -8,10 +8,9 @@ import numpy as np
 from torch.autograd import Variable
 
 from config import parse_args
-from utils import save_sample
+from utils import VGGNet, save_sample, load_img
 from dataloader import coco_loader
 from model import Encoder, Decoder, GeneratorA, GeneratorB, Discriminator, weights_init_normal, LambdaLR
-
 
 
 def train():
@@ -21,9 +20,18 @@ def train():
     input_shape = (opt.channels, opt.img_width, opt.img_height)
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-    # get dataloader
-    train_loader = coco_loader(opt, mode='train')
-    test_loader = coco_loader(opt, mode='test')
+    transform = transforms.Compose([transforms.Resize(int(opt.img_height * 1.12), Image.BICUBIC),
+                                    transforms.RandomCrop((opt.img_height, opt.img_width)),
+                                    transforms.RandomHorizontalFlip(),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+    # Get dataloader
+    train_loader = coco_loader(opt, mode='train', transform)
+    test_loader = coco_loader(opt, mode='test', transform)
+
+    # Get vgg
+    vgg = VGGNet()
 
     # Initialize two generators and the discriminator
     shared_E = Encoder(opt.channels, opt.dim, opt.n_downsample)
@@ -44,6 +52,7 @@ def train():
     criterion_pixel = torch.nn.L1Loss()
 
     if cuda:
+        vgg = vgg.cuda().eval()
         G_A = G_A.cuda()
         G_B = G_B.cuda()
         D_B = D_B.cuda()
@@ -56,13 +65,17 @@ def train():
     lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
     lr_scheduler_D = torch.optim.lr_scheduler.LambdaLR(optimizer_D, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
 
+    # Compute the style features in advance
+    style_img = Variable(load_img(opt.style_img).type(FloatTensor))
+    style_feature = vgg(style_img)
+
     prev_time = time.time()
     for epoch in range(opt.epoch, opt.n_epochs):
-        for batch_i, img in enumerate(train_loader):
-            img = Variable(img.type(FloatTensor))
+        for batch_i, content_img in enumerate(train_loader):
+            content_img = Variable(content_img.type(FloatTensor))
 
-            valid = Variable(FloatTensor(np.ones((img.size(0), *D_B.output_shape))), requires_grad=False)
-            fake = Variable(FloatTensor(np.zeros((img.size(0), *D_B.output_shape))), requires_grad=False)
+            valid = Variable(FloatTensor(np.ones((content_img.size(0), *D_B.output_shape))), requires_grad=False)
+            fake = Variable(FloatTensor(np.zeros((content_img.size(0), *D_B.output_shape))), requires_grad=False)
 
             # ---------------------
             #  Train Generators
@@ -70,8 +83,23 @@ def train():
 
             optimizer_G.zero_grad()
 
-            stylized_img = G_A(img)
+            # 生成的图像并没有做反正则化，得保证：内容，风格，生成图，图像预处理的一致性！
+            stylized_img = G_A(content_img)
+
+            target_feature = vgg(stylized_img)
+            content_feature = vgg(content_img)
+            loss_st = opt.lambda_st * vgg.compute_st_loss(target_feature, content_feature, style_feature, opt.lambda_style)
+
             reconstructed_img = G_B(stylized_img)
+            loss_adv = opt.lambda_adv * criterion_GAN(D_B(reconstructed_img), valid)
+
+            loss_G = loss_st + loss_adv
+            loss_G.backward()
+            optimizer_G.step()
+
+            # ----------------------
+            #  Train Discriminator
+            # ----------------------
 
 
 

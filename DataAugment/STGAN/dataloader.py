@@ -26,14 +26,7 @@ class ImageDataset(Dataset):
         return self.length
 
 
-def coco_loader(opt, mode):
-
-    # pre-process the data
-    transform = transforms.Compose([transforms.Resize(int(opt.img_height * 1.12), Image.BICUBIC),
-                                    transforms.RandomCrop((opt.img_height, opt.img_width)),
-                                    transforms.RandomHorizontalFlip(),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+def coco_loader(opt, mode, transform):
     loader = ImageDataset(opt.dataset,
                           transforms_=transform)
 
