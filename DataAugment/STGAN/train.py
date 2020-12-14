@@ -39,10 +39,16 @@ def train():
     G_B.apply(weights_init_normal)
     D_B.apply(weights_init_normal)
 
+    # Losses
+    criterion_GAN = torch.nn.MSELoss()
+    criterion_pixel = torch.nn.L1Loss()
+
     if cuda:
         G_A = G_A.cuda()
         G_B = G_B.cuda()
         D_B = D_B.cuda()
+        criterion_GAN.cuda()
+        criterion_pixel.cuda()
     
     optimizer_G = torch.optim.Adam(itertools.chain(G_A.parameters(), G_B.parameters()), lr=opt.lr, betas=(0.5, 0.999))
     optimizer_D = torch.optim.Adam(D_B.parameters, lr=opt.lr, betas=(0.5, 0.999))
@@ -55,10 +61,19 @@ def train():
         for batch_i, img in enumerate(train_loader):
             img = Variable(img.type(FloatTensor))
 
+            valid = Variable(FloatTensor(np.ones((img.size(0), *D_B.output_shape))), requires_grad=False)
+            fake = Variable(FloatTensor(np.zeros((img.size(0), *D_B.output_shape))), requires_grad=False)
+
+            # ---------------------
+            #  Train Generators
+            # ---------------------
+
+            optimizer_G.zero_grad()
+
             stylized_img = G_A(img)
             reconstructed_img = G_B(stylized_img)
 
-            valid = Variable(FloatTensor(np.ones()))
+
 
 
     # # Loss function
