@@ -26,7 +26,14 @@ class VGGNet(nn.Module):
             if name in self.select:
                 features.append(x)
         return features
-    
+
+    def calc_mean_std(self, feat, eps=1e-5):
+        N, C = feat.size()[:2]
+        feat_var = feat.view(N, C, -1).var(dim=2) + eps
+        feat_std = feat_var.sqrt().view(N, C, 1, 1)
+        feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
+        return feat_mean, feat_std
+  
     def compute_st_loss(self, target, content, style, style_weight):
         style_loss = 0.0
         content_loss = 0.0
@@ -34,14 +41,12 @@ class VGGNet(nn.Module):
         for f1, f2, f3 in zip(target, content, style):
             content_loss += torch.mean((f1 - f2)**2)
 
-            _, c, h, w = f1.size()
-            f1 = f1.view(c, h * w)
-            f3 = f3.view(c, h * w)
+            target_mean, target_std = self.calc_mean_std(f1)
+            style_mean, style_std = self.calc_mean_std(f3)
 
-            f1 = torch.mm(f1, f1.t())
-            f3 = torch.mm(f3, f3.t())
-
-            style_loss += torch.mean((f1 - f3)**2) / (c * h * w)
+            mean_loss = torch.mean((target_mean - style_mean)**2)
+            std_loss = torch.mean((target_std - style_std)**2)
+            style_loss += mean_loss + std_loss
 
         st_loss = content_loss + style_weight * style_loss
 
@@ -93,15 +98,15 @@ def resize_img(path):
         img.save(img_path)
 
 
-def save_sample(style_name, test_loader, batches_done, G_A, G_B, FloatTensorr):
+def save_sample(style_name, test_loader, batches_done, G_A, G_B, FloatTensor):
     img = next(iter(test_loader))
     img = Variable(img.type(FloatTensor))
 
     stylized_img = G_A(img)
-    reconstructed_img = G_B(reconstructed_img)
+    reconstructed_img = G_B(stylized_img)
 
     samples = torch.cat((stylized_img.data, reconstructed_img.data), 0)
-    save_image(samples, "images/%s/%d.png" % (dataset, batches_done), nrow=4, normalize=True)
+    save_image(samples, "images/%s/%d.png" % (style_name, batches_done), nrow=4, normalize=True)
 
 
 if __name__ == "__main__":
@@ -110,3 +115,5 @@ if __name__ == "__main__":
     # create_gif(image_path)
 
     # vgg = VGGNet().to('cuda:0').eval()
+
+    pass

@@ -5,6 +5,9 @@ import itertools
 import datetime
 
 import numpy as np
+import torchvision.transforms as transforms
+
+from PIL import Image
 from torch.autograd import Variable
 
 from config import parse_args
@@ -27,8 +30,8 @@ def train():
                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     # Get dataloader
-    train_loader = coco_loader(opt, mode='train', transform)
-    test_loader = coco_loader(opt, mode='test', transform)
+    train_loader = coco_loader(opt, mode='train', transform=transform)
+    test_loader = coco_loader(opt, mode='test', transform=transform)
 
     # Get vgg
     vgg = VGGNet()
@@ -60,13 +63,13 @@ def train():
         criterion_pixel.cuda()
     
     optimizer_G = torch.optim.Adam(itertools.chain(G_A.parameters(), G_B.parameters()), lr=opt.lr, betas=(0.5, 0.999))
-    optimizer_D = torch.optim.Adam(D_B.parameters, lr=opt.lr, betas=(0.5, 0.999))
+    optimizer_D = torch.optim.Adam(D_B.parameters(), lr=opt.lr, betas=(0.5, 0.999))
 
     lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
     lr_scheduler_D = torch.optim.lr_scheduler.LambdaLR(optimizer_D, lr_lambda=LambdaLR(opt.n_epochs, opt.epoch, opt.decay_epoch).step)
 
     # Compute the style features in advance
-    style_img = Variable(load_img(opt.style_img).type(FloatTensor))
+    style_img = Variable(load_img(opt.style_img, transform).type(FloatTensor))
     style_feature = vgg(style_img)
 
     prev_time = time.time()
