@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+
 import torchvision.transforms as transforms
+from torch.nn import functional as F
 
 from WCT import WCT2
 from PIL import Image
@@ -83,9 +85,11 @@ class VGGRapper(object):
                                          self.style,
                                          alpha=1,
                                          weight=value) # [bs, 3, 32, 32]
-            outputs = self.vgg(img_aug) # [bs, 4]
 
-            return outputs[:, 2] # 第二维度代表雾天的打分
+            outputs = self.vgg(img_aug) # [bs, 4]
+            prob = F.softmax(outputs)
+
+            return prob[:, 2] # 第二维度代表雾天的打分
     
     def wct_transfer(self, state, value):
         value = value.unsqueeze(2).unsqueeze(3) # 调整维度以进行后面的运算
