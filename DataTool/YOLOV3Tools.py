@@ -12,6 +12,20 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def modify_txt_line_word(txt_path, word, replaced, save_path):
+    """
+    Replace the word with the replaced.
+    """
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
+    for idx in tqdm.tqdm(range(len(lines))):
+        lines[idx] = lines[idx].replace(word, replaced)
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(lines)
+
+
 def convert_to_single_class_txt(txt_path, save_path):
     """
     Convert the multiple classes labels to single label.
@@ -761,3 +775,8 @@ def parse_data_config(path):
 
 # convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels",
 #                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels")
+
+# modify_txt_line_word("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/test.txt",
+#                      "shuffled",
+#                      "single",
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/test.txt")
