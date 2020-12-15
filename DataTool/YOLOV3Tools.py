@@ -747,9 +747,6 @@ def parse_data_config(path):
 
 # pltBbox("data/custom/images/DSC_0057.jpg","data/custom/labels/DSC_0057.txt")
 
-# create_dataset_txt("data/custom/test/images", 
-#                    "data/custom/test/test.txt")
-
 # print_txt_category("data/custom/test/labels")
 
 # resize_images("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/Pix2Pix-forlab/data-resize/6", 
@@ -762,5 +759,5 @@ def parse_data_config(path):
 # txt2xml(class_names, "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/images",
 #         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels", "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels")
 
-convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels",
-                            "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels")
+# convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels",
+#                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels")
