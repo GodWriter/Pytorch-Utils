@@ -12,6 +12,26 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def convert_to_single_class_txt(txt_path, save_path):
+    """
+    Convert the multiple classes labels to single label.
+    """
+    names = os.listdir(txt_path)
+    dicts = {}
+
+    for name in tqdm.tqdm(names):
+        file_path = os.path.join(txt_path, name)
+
+        with open(file_path, 'r') as fp:
+            lines = fp.readlines()
+        
+        for idx in range(len(lines)):
+            lines[idx] = '0' + lines[idx][1:]
+        
+        with open(os.path.join(save_path, name), 'a+') as fp:
+            fp.writelines(lines)
+
+
 def print_txt_category(txt_path):
     """
     Find the wrong category from all the txts.
@@ -741,3 +761,6 @@ def parse_data_config(path):
 
 # txt2xml(class_names, "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/images",
 #         "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels", "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels")
+
+convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/labels",
+                            "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels")
