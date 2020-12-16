@@ -780,3 +780,11 @@ def parse_data_config(path):
 #                      "shuffled",
 #                      "single",
 #                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/test.txt")
+
+# modify_txt_line_word("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train+10.txt",
+#                      "shuffled",
+#                      "single",
+#                      "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/train+10.txt")
+
+# rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels-fog",
+#             "fog-")
