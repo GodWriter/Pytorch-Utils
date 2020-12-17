@@ -17,7 +17,10 @@ DataAugment/AutoWCT2/checkpoints
 DataAugment/AutoWCT2/__pycache__
 
 DataAugment/STGAN/data
+DataAugment/STGAN/images
 DataAugment/STGAN/checkpoints
+
+DataAugment/Dehaze
 
 DataTool/config
 DataTool/data
