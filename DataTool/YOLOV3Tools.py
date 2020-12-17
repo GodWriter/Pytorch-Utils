@@ -788,3 +788,6 @@ def parse_data_config(path):
 
 # rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/labels-fog",
 #             "fog-")
+
+# convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels",
+#                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels-singleclass")
