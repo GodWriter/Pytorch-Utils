@@ -12,6 +12,27 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def get_max_from_multiple_category(file_path):
+    """
+    Multiple category test file.
+    """
+    file_names = os.listdir(file_path)
+
+    for name in file_names:
+        txt_path = os.path.join(file_path, name, 'mAP.txt')
+        acc = np.loadtxt(txt_path, dtype=np.float)
+
+        print(name, acc.max())
+
+
+def get_max_from_single_category(txt_path):
+    """
+    Single category test file, get the max one.
+    """
+    acc = np.loadtxt(txt_path, dtype=np.float)
+    print(acc.max())
+
+
 def modify_txt_line_word(txt_path, word, replaced, save_path):
     """
     Replace the word with the replaced.
@@ -791,3 +812,7 @@ def parse_data_config(path):
 
 # convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels",
 #                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels-singleclass")
+
+# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-defogtest-10/boat.txt")
+
+# get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/原始数据+10%黄昏-雾天增广数据")
