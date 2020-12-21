@@ -12,6 +12,34 @@ from xml.dom.minidom import Document
 from matplotlib import pyplot as plt
 
 
+def merge_txt_locations(txt_path, save_path, prefix):
+    """
+    Merge the new txt files representing different style of datasets.
+    """
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+
+    for idx in range(len(lines)):
+        lines[idx] = prefix + lines[idx]
+
+    with open(save_path, 'a+') as fp:
+        fp.writelines(lines)    
+
+
+def get_txt_names(txt_path, save_path):
+    """
+    Get names from txt file.
+    """
+    with open(txt_path, 'r') as fp:
+        lines = fp.readlines()
+    
+    for idx in range(len(lines)):
+        lines[idx] = lines[idx].split('/')[-1]
+    
+    with open(save_path, 'a+') as fp:
+        fp.writelines(lines)
+
+
 def get_max_from_multiple_category(file_path):
     """
     Multiple category test file.
@@ -813,6 +841,13 @@ def parse_data_config(path):
 # convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels",
 #                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels-singleclass")
 
-# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-defogtest-10/boat.txt")
+# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-noramltest-10/boat.txt")
 
 # get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/原始数据+10%黄昏-雾天增广数据")
+
+# get_txt_names("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train.txt",
+#               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train_names.txt")
+
+# merge_txt_locations("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train_names.txt",
+#                     "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/resized416x416/train_fog.txt",
+#                     "data/custom/shuffled_fog/images/")
