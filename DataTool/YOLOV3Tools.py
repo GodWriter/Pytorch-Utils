@@ -841,9 +841,9 @@ def parse_data_config(path):
 # convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels",
 #                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels-singleclass")
 
-# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-noramltest-10/boat.txt")
+# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-noramltest-10/mAP.txt")
 
-# get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/原始数据+10%黄昏-雾天增广数据")
+# get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/原始数据+100%雾天数据")
 
 # get_txt_names("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train.txt",
 #               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train_names.txt")
