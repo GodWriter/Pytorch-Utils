@@ -17,6 +17,7 @@ from PIL import Image
 FILE_PATH = "data/lab"
 SAVE_PATH = "data/labAug"
 SEQ = iaa.Sequential([iaa.ElasticTransformation(alpha=60, sigma=6)], random_order=True)
+# SEQ = iaa.Sequential([iaa.EdgeDetect(alpha=0.4, name=None, deterministic=False, random_state=None)], random_order=True)
 
 
 image_list = os.listdir(FILE_PATH)
