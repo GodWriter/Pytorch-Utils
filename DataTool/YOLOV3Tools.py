@@ -841,13 +841,16 @@ def parse_data_config(path):
 # convert_to_single_class_txt("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels",
 #                             "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/weather/defog/darkChannel/labels-singleclass")
 
-# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-noramltest-10/mAP.txt")
+# get_max_from_single_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/single/record/singleclass-ACE-10fog/mAP.txt")
 
-# get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/原始数据+100%雾天数据")
+# get_max_from_multiple_category("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/records/100%雾天")
 
 # get_txt_names("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train.txt",
 #               "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train_names.txt")
 
 # merge_txt_locations("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/train_names.txt",
 #                     "C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/resized416x416/train_fog.txt",
-#                     "data/custom/shuffled_fog/images/")
+#                     "data/custom/single/images/fog-")
+
+# rename_file("C:/Users/18917/Documents/Python Scripts/pytorch/Lab/PyTorch-YOLOv3-master/data/custom/shuffled/resized416x416/fog-renamed",
+#             "fog-")
